@@ -30,6 +30,13 @@ All git operations **MUST** use the Makefile targets. **Never** run raw
 | Finish and merge an issue | `make finish-issue ID=X` |
 | Close a milestone to main | `make finish-milestone MILESTONE=MX` |
 
+> **⛔ CRITICAL**: The agent **MUST NEVER** execute these Makefile lifecycle
+> commands itself. Only the **user** runs them manually in their terminal.
+> The agent's role is to write code, create files, and indicate which command
+> the user should run next — never to execute `make start-issue`,
+> `make finish-issue`, `make deps`, `make test-issue`, or
+> `make finish-milestone` on behalf of the user.
+
 ---
 
 ## 3. Conventional Commits (MANDATORY)

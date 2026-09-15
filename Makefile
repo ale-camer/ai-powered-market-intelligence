@@ -105,6 +105,7 @@ endif
 	git checkout develop
 	git pull origin develop
 	git branch -D $(BRANCH) 2>/dev/null || true
+	gh issue close $(ID)
 	@echo "✅ Issue #$(ID) merged to develop. Branch $(BRANCH) deleted."
 
 .PHONY: finish-milestone
