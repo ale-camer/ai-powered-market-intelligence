@@ -100,8 +100,7 @@ endif
 		--base develop \
 		--head $(BRANCH) \
 		--title "$(BRANCH)" \
-		--body "Closes #$(ID)" \
-		--label "auto-merge"
+		--body "Closes #$(ID)"
 	gh pr merge --squash --delete-branch --admin
 	git checkout develop
 	git pull origin develop
