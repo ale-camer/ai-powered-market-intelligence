@@ -64,9 +64,10 @@ ai-powered-market-intelligence/
 │       ├── extractors/     # Data source connectors
 │       ├── transformers/   # NLP enrichment, normalization
 │       ├── loaders/        # DB / vector store writers
-│       ├── pipelines/      # Airflow DAGs
+│       ├── pipelines/      # Pipeline orchestration logic
 │       ├── api/            # FastAPI app
 │       └── core/           # Shared config, logging, exceptions
+├── dags/                   # Airflow DAG definitions
 ├── tests/
 │   ├── unit/
 │   ├── integration/

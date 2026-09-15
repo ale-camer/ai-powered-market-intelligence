@@ -23,6 +23,7 @@
 - [x] `pyproject.toml` created (build system, dev extras, ruff, mypy, pytest)
 
 ### Folder Structure (empty, with .gitkeep)
+- [x] `dags/`
 - [x] `src/market_intel/extractors/`
 - [x] `src/market_intel/transformers/`
 - [x] `src/market_intel/loaders/`
