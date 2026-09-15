@@ -1,8 +1,8 @@
 # Issue #0 — Day 0 Setup Tracking
 
 **Branch:** `feature/day-0-setup`
-**PR:** _(to be filled when merged)_
-**Status:** 🟡 In Progress
+**PR:** [#26 — chore: Day 0 scaffolding](https://github.com/ale-camer/ai-powered-market-intelligence/pull/26) ✅ Merged
+**Status:** ✅ Complete
 
 ---
 
@@ -15,7 +15,7 @@
 
 ### Virtual Environment
 - [x] `.venv` created with Python 3.12+ (`python3 -m venv .venv`)
-- [ ] `.venv` verified: `.venv/bin/python --version` shows ≥ 3.12
+- [x] `.venv` verified: `.venv/bin/python --version` shows Python 3.14.5
 
 ### Configuration Files
 - [x] `.gitignore` created (Python, venv, IDE, Airflow, Terraform, secrets)
@@ -52,13 +52,13 @@
 - [x] `docs/issue_0_setup.md` (this file)
 
 ### GitHub Remote
-- [ ] Repo created: `gh repo create ale-camer/ai-powered-market-intelligence --public`
-- [ ] Initial branches pushed: `main`, `develop`, `feature/day-0-setup`
-- [ ] 5 milestones created (M1–M5)
-- [ ] 25 issues created (atomic, assigned to milestones)
-- [ ] PR `feature/day-0-setup` → `develop` opened
-- [ ] PR merged → branch deleted
-- [ ] `develop` fast-forward merged to `main` (via `finish-milestone`)
+- [x] Repo created: `gh repo create ale-camer/ai-powered-market-intelligence --public`
+- [x] Initial branches pushed: `main`, `develop`, `feature/day-0-setup`
+- [x] 5 milestones created (M1–M5)
+- [x] 25 issues created (atomic, assigned to milestones, #1–#25)
+- [x] PR `feature/day-0-setup` → `develop` opened (PR #26)
+- [x] PR #26 merged (squash) → branch deleted locally and remotely
+- [ ] `develop` → `main` merge pending (triggered by `make finish-milestone MILESTONE=M5` at project end)
 
 ---
 
