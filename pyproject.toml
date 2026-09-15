@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "market-intel"
@@ -21,7 +21,8 @@ classifiers = [
 # Core runtime dependencies (filled in per-issue)
 # ──────────────────────────────────────────────────────────────────────────────
 dependencies = [
-    # Added per issue — DO NOT populate during Day 0
+    "pydantic-settings>=2.0.0",
+    "python-json-logger>=2.0.0",
 ]
 
 [project.optional-dependencies]
@@ -98,6 +99,7 @@ markers = [
     "unit: fast, isolated unit tests",
     "integration: tests requiring real services (db, redis)",
     "e2e: full end-to-end tests",
+    "issue_01: tests for Issue #01",
     "issue_1: tests for Issue #1",
     "issue_2: tests for Issue #2",
     "issue_3: tests for Issue #3",
