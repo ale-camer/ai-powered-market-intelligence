@@ -1,0 +1,137 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "market-intel"
+version = "0.1.0"
+description = "AI-Powered Market Intelligence — E2E data pipeline for financial signals"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "ale-camer" }]
+keywords = ["market-intelligence", "nlp", "airflow", "pgvector", "fintech"]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+]
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Core runtime dependencies (filled in per-issue)
+# ──────────────────────────────────────────────────────────────────────────────
+dependencies = [
+    # Added per issue — DO NOT populate during Day 0
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=5.0",
+    "ruff>=0.4",
+    "mypy>=1.10",
+    "pre-commit>=3.7",
+    "httpx>=0.27",
+    "factory-boy>=3.3",
+]
+
+ingestion = [
+    # Issue #2-#5 dependencies go here
+]
+
+storage = [
+    # Issue #6-#9 dependencies go here
+]
+
+nlp = [
+    # Issue #10-#13 dependencies go here
+]
+
+orchestration = [
+    # Issue #14-#18 dependencies go here
+]
+
+all = [
+    "market-intel[ingestion,storage,nlp,orchestration]",
+]
+
+[project.urls]
+Homepage = "https://github.com/ale-camer/ai-powered-market-intelligence"
+Repository = "https://github.com/ale-camer/ai-powered-market-intelligence"
+Issues = "https://github.com/ale-camer/ai-powered-market-intelligence/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Ruff (linter + formatter)
+# ──────────────────────────────────────────────────────────────────────────────
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "ANN"]
+ignore = ["ANN101", "ANN102"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["market_intel"]
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Mypy
+# ──────────────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+exclude = ["tests/", "infra/"]
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Pytest
+# ──────────────────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "--tb=short --strict-markers -v"
+markers = [
+    "unit: fast, isolated unit tests",
+    "integration: tests requiring real services (db, redis)",
+    "e2e: full end-to-end tests",
+    "issue_1: tests for Issue #1",
+    "issue_2: tests for Issue #2",
+    "issue_3: tests for Issue #3",
+    "issue_4: tests for Issue #4",
+    "issue_5: tests for Issue #5",
+    "issue_6: tests for Issue #6",
+    "issue_7: tests for Issue #7",
+    "issue_8: tests for Issue #8",
+    "issue_9: tests for Issue #9",
+    "issue_10: tests for Issue #10",
+    "issue_11: tests for Issue #11",
+    "issue_12: tests for Issue #12",
+    "issue_13: tests for Issue #13",
+    "issue_14: tests for Issue #14",
+    "issue_15: tests for Issue #15",
+    "issue_16: tests for Issue #16",
+    "issue_17: tests for Issue #17",
+    "issue_18: tests for Issue #18",
+    "issue_19: tests for Issue #19",
+    "issue_20: tests for Issue #20",
+    "issue_21: tests for Issue #21",
+    "issue_22: tests for Issue #22",
+    "issue_23: tests for Issue #23",
+    "issue_24: tests for Issue #24",
+    "issue_25: tests for Issue #25",
+]
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Coverage
+# ──────────────────────────────────────────────────────────────────────────────
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*", "*/__init__.py"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80
