@@ -90,11 +90,17 @@ endif
 	@echo "✅ Branch feature/issue-$(ID)-$(NAME) created from develop"
 
 .PHONY: finish-issue
-finish-issue: ## Push branch, open PR with Closes #ID, merge to develop, delete branch: make finish-issue ID=X
+finish-issue: ## Stage, commit, push, PR with Closes #ID, merge, close issue: make finish-issue ID=X [MSG="..."]
 ifndef ID
-	$(error ID is required. Usage: make finish-issue ID=<issue-number>)
+	$(error ID is required. Usage: make finish-issue ID=<issue-number> [MSG="commit message"])
 endif
 	$(eval BRANCH := $(shell git rev-parse --abbrev-ref HEAD))
+	$(eval COMMIT_MSG := $(if $(MSG),$(MSG),feat: complete issue #$(ID)))
+	@if [ -n "$$(git status --porcelain)" ]; then \
+		echo "📦 Staging and committing changes..."; \
+		git add -A; \
+		git commit -m "$(COMMIT_MSG)"; \
+	fi
 	git push -u origin $(BRANCH)
 	gh pr create \
 		--base develop \

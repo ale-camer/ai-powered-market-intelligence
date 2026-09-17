@@ -38,7 +38,7 @@ dev = [
 ]
 
 ingestion = [
-    # Issue #2-#5 dependencies go here
+    "httpx>=0.27.0",
 ]
 
 storage = [
@@ -101,6 +101,7 @@ markers = [
     "e2e: full end-to-end tests",
     "issue_01: tests for Issue #01",
     "issue_1: tests for Issue #1",
+    "issue_02: tests for Issue #02",
     "issue_2: tests for Issue #2",
     "issue_3: tests for Issue #3",
     "issue_4: tests for Issue #4",

@@ -11,3 +11,39 @@ class MarketIntelError(Exception):
 
 class ConfigurationError(MarketIntelError):
     """Raised when configuration validation or loading fails."""
+
+
+class ExtractorError(MarketIntelError):
+    """Base exception for data extractor errors."""
+
+
+class RateLimitError(ExtractorError):
+    """Raised when an external API rate limit is exceeded."""
+
+    def __init__(
+        self,
+        message: str = "Rate limit exceeded",
+        retry_after: float | None = None,
+        *args: object,
+    ) -> None:
+        super().__init__(message, *args)
+        self.retry_after = retry_after
+
+
+class AuthenticationError(ExtractorError):
+    """Raised when authentication with an external service fails."""
+
+
+class NewsAPIError(ExtractorError):
+    """Raised when NewsAPI returns an error response or request fails."""
+
+    def __init__(
+        self,
+        message: str = "",
+        status_code: int | None = None,
+        error_code: str | None = None,
+        *args: object,
+    ) -> None:
+        super().__init__(message, *args)
+        self.status_code = status_code
+        self.error_code = error_code
