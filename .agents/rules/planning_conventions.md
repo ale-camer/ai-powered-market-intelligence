@@ -16,5 +16,6 @@ The plan should be a standard Markdown document containing:
 2. **Objective**: A brief summary of the goal.
 3. **Acceptance Criteria**: A checklist of requirements.
 4. **Implementation Tasks**: Step-by-step breakdown of the changes (grouped by files/components), including `make` commands for starting, testing, and finishing the issue.
+   - **CRITICAL MILESTONE RULE**: If the issue is the last issue in a Milestone, you MUST append a final step to run `make finish-milestone MILESTONE=<name>` to merge the work from `develop` into `main`.
 
 Always adhere to these conventions to keep the repository's documentation organized.

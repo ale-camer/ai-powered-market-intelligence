@@ -76,3 +76,30 @@ class PostSchema(BaseModel):
     num_comments: int
     created_utc: datetime
     flair: str | None = None
+
+
+class PriceSchema(BaseModel):
+    """Standardized schema for daily price data."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    symbol: str
+    date: datetime
+    open: float
+    high: float
+    low: float
+    close: float
+    adjusted_close: float | None = None
+    volume: int
+
+
+class FundamentalsSchema(BaseModel):
+    """Standardized schema for company fundamentals."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    symbol: str
+    market_cap: float | None = None
+    pe_ratio: float | None = Field(default=None, alias="PERatio")
+    ebitda: float | None = None
+    eps: float | None = None

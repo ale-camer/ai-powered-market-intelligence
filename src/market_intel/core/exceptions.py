@@ -64,3 +64,16 @@ class SecEdgarError(ExtractorError):
 
 class RedditError(ExtractorError):
     """Raised when Reddit PRAW returns an error response or request fails."""
+
+
+class AlphaVantageError(ExtractorError):
+    """Raised when Alpha Vantage returns an error response or request fails."""
+
+    def __init__(
+        self,
+        message: str = "",
+        status_code: int | None = None,
+        *args: object,
+    ) -> None:
+        super().__init__(message, *args)
+        self.status_code = status_code
