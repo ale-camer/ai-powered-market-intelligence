@@ -39,3 +39,27 @@ class NewsAPIResponseSchema(BaseModel):
     articles: list[ArticleSchema] = Field(default_factory=list)
     code: str | None = None
     message: str | None = None
+
+
+class FinancialMetricsSchema(BaseModel):
+    """Extracted financial metrics from an SEC filing."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    revenue: float | None = None
+    eps: float | None = None
+    assets: float | None = None
+
+
+class FilingSchema(BaseModel):
+    """Standardized schema for SEC EDGAR filings."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    cik: str
+    company_name: str
+    filing_type: str
+    filing_date: datetime
+    period_of_report: datetime | None = None
+    metrics: FinancialMetricsSchema
+

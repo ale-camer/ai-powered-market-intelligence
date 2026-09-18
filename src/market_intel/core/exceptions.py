@@ -47,3 +47,17 @@ class NewsAPIError(ExtractorError):
         super().__init__(message, *args)
         self.status_code = status_code
         self.error_code = error_code
+
+
+class SecEdgarError(ExtractorError):
+    """Raised when SEC EDGAR returns an error response or request fails."""
+
+    def __init__(
+        self,
+        message: str = "",
+        status_code: int | None = None,
+        *args: object,
+    ) -> None:
+        super().__init__(message, *args)
+        self.status_code = status_code
+
