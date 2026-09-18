@@ -61,3 +61,6 @@ class SecEdgarError(ExtractorError):
         super().__init__(message, *args)
         self.status_code = status_code
 
+
+class RedditError(ExtractorError):
+    """Raised when Reddit PRAW returns an error response or request fails."""

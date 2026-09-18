@@ -63,3 +63,16 @@ class FilingSchema(BaseModel):
     period_of_report: datetime | None = None
     metrics: FinancialMetricsSchema
 
+
+class PostSchema(BaseModel):
+    """Standardized schema for Reddit posts."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    subreddit: str
+    title: str
+    body: str | None = None
+    score: int
+    num_comments: int
+    created_utc: datetime
+    flair: str | None = None
