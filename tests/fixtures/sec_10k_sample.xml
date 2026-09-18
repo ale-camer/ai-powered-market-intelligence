@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xbrl>
+    <ix:nonfraction name="us-gaap:Revenues">5000000</ix:nonfraction>
+    <ix:nonfraction name="us-gaap:EarningsPerShare">1.25</ix:nonfraction>
+    <ix:nonfraction name="us-gaap:Assets">10000000</ix:nonfraction>
+</xbrl>
