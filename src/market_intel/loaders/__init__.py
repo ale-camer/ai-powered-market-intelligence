@@ -14,6 +14,10 @@ from market_intel.loaders.models import (
     PriceDataModel,
     RedditPostModel,
 )
+from market_intel.loaders.repository import (
+    EmbeddingRepository,
+    compute_cosine_similarity,
+)
 
 __all__ = [
     "Base",
@@ -26,4 +30,6 @@ __all__ = [
     "RedditPostModel",
     "PriceDataModel",
     "EnrichedSignalModel",
+    "EmbeddingRepository",
+    "compute_cosine_similarity",
 ]

@@ -97,7 +97,7 @@ def test_response_exception_401_raises_auth_error(
     """Test that ResponseException with 401 is mapped to AuthenticationError."""
     mock_response = MagicMock()
     mock_response.status_code = 401
-    
+
     mock_subreddit = MagicMock()
     mock_subreddit.top.side_effect = ResponseException(mock_response)
     extractor.reddit.subreddit.return_value = mock_subreddit

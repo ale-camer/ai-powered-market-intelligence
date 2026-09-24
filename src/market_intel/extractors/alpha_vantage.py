@@ -22,10 +22,10 @@ class AlphaVantageExtractor:
         self.api_key = api_key or settings.alpha_vantage_api_key
         if not self.api_key:
             raise AlphaVantageError("Missing Alpha Vantage API key.")
-        
+
         self.client = httpx.AsyncClient()
         self._cache: dict[str, dict[str, Any]] = {}
-        
+
         # Rate limiting state
         self._call_timestamps: list[float] = []
         self._calls_per_minute = 5
@@ -37,16 +37,16 @@ class AlphaVantageExtractor:
     async def _enforce_rate_limit(self) -> None:
         """Enforce the 5 calls per minute rate limit."""
         now = asyncio.get_event_loop().time()
-        
+
         # Remove timestamps older than 60 seconds
         self._call_timestamps = [t for t in self._call_timestamps if now - t < 60.0]
-        
+
         if len(self._call_timestamps) >= self._calls_per_minute:
             # We need to wait until the oldest call is 60 seconds old
             sleep_time = 60.0 - (now - self._call_timestamps[0])
             if sleep_time > 0:
                 await asyncio.sleep(sleep_time)
-            
+
             # Re-evaluate after sleeping
             now = asyncio.get_event_loop().time()
             self._call_timestamps = [t for t in self._call_timestamps if now - t < 60.0]
@@ -81,7 +81,7 @@ class AlphaVantageExtractor:
 
             self._cache[cache_key] = data
             return data
-            
+
         except httpx.HTTPError as e:
             raise AlphaVantageError(f"HTTP Error: {e}") from e
         except ValueError as e:
@@ -90,7 +90,7 @@ class AlphaVantageExtractor:
     async def fetch_daily_adjusted(self, symbol: str) -> list[PriceSchema]:
         """Fetch daily adjusted time series data."""
         data = await self._request("TIME_SERIES_DAILY_ADJUSTED", symbol, outputsize="compact")
-        
+
         time_series = data.get("Time Series (Daily)", {})
         if not time_series:
             return []
@@ -115,7 +115,7 @@ class AlphaVantageExtractor:
     async def fetch_overview(self, symbol: str) -> FundamentalsSchema | None:
         """Fetch company overview and fundamentals."""
         data = await self._request("OVERVIEW", symbol)
-        
+
         if not data or not data.get("Symbol"):
             return None
 

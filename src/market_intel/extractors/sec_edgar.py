@@ -164,7 +164,7 @@ class SecEdgarExtractor:
             raw_name = tag.get("name", "")
             name_attr = raw_name[0].lower() if isinstance(raw_name, list) else str(raw_name).lower()
             text_val = tag.get_text(strip=True).replace(",", "")
-            
+
             try:
                 val = float(text_val)
             except ValueError:
@@ -185,47 +185,49 @@ class SecEdgarExtractor:
         form_type: str = "10-K",
     ) -> list[FilingSchema]:
         """Fetch filings for a given CIK and form type.
-        
+
         Args:
             cik: Central Index Key (10 digit string).
             form_type: Form type to filter (e.g. "10-K" or "10-Q").
-            
+
         Returns:
             List of parsed FilingSchema models.
         """
         padded_cik = str(cik).zfill(10)
         url = f"{self.SEC_SUBMISSIONS_URL}/CIK{padded_cik}.json"
-        
+
         response = await self._request(url)
         data = response.json()
-        
+
         company_name = data.get("name", "Unknown Company")
         filings_data = data.get("filings", {}).get("recent", {})
-        
+
         results: list[FilingSchema] = []
         if not filings_data:
             return results
-            
+
         forms = filings_data.get("form", [])
         accession_numbers = filings_data.get("accessionNumber", [])
         filing_dates = filings_data.get("filingDate", [])
         primary_documents = filings_data.get("primaryDocument", [])
-        
+
         for idx, form in enumerate(forms):
             if form != form_type:
                 continue
-                
+
             acc_num = accession_numbers[idx]
             clean_acc_num = acc_num.replace("-", "")
             f_date_str = filing_dates[idx]
             primary_doc = primary_documents[idx]
-            
+
             try:
                 filing_date = datetime.strptime(f_date_str, "%Y-%m-%d")
             except (ValueError, TypeError):
                 filing_date = datetime.now()
-                
-            doc_url = f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{clean_acc_num}/{primary_doc}"
+
+            doc_url = (
+                f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{clean_acc_num}/{primary_doc}"
+            )
             try:
                 doc_resp = await self._request(doc_url)
                 xbrl_metrics = self._parse_xbrl_html(doc_resp.text)
@@ -238,13 +240,15 @@ class SecEdgarExtractor:
                 eps=xbrl_metrics.get("eps"),
                 assets=xbrl_metrics.get("assets"),
             )
-            
-            results.append(FilingSchema(
-                cik=padded_cik,
-                company_name=company_name,
-                filing_type=form,
-                filing_date=filing_date,
-                metrics=metrics,
-            ))
-            
+
+            results.append(
+                FilingSchema(
+                    cik=padded_cik,
+                    company_name=company_name,
+                    filing_type=form,
+                    filing_date=filing_date,
+                    metrics=metrics,
+                )
+            )
+
         return results

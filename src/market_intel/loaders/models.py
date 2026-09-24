@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     BigInteger,
     DateTime,
@@ -24,6 +25,8 @@ from market_intel.loaders.database import Base, TimestampMixin
 
 # Use JSONB for PostgreSQL and generic JSON for SQLite/other engines
 JSON_VARIANT = JSON().with_variant(JSONB(), "postgresql")
+# Use Vector(1536) for PostgreSQL and JSON for SQLite/unit test engines
+VECTOR_VARIANT = Vector(1536).with_variant(JSON(), "sqlite")
 
 
 class ArticleModel(Base, TimestampMixin):
@@ -50,9 +53,7 @@ class ArticleModel(Base, TimestampMixin):
     )
     content: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    __table_args__ = (
-        Index("ix_articles_published_at_source", "published_at", "source_name"),
-    )
+    __table_args__ = (Index("ix_articles_published_at_source", "published_at", "source_name"),)
 
 
 class FilingModel(Base, TimestampMixin):
@@ -85,9 +86,7 @@ class FilingModel(Base, TimestampMixin):
         nullable=True,
     )
 
-    __table_args__ = (
-        Index("ix_filings_cik_filing_date", "cik", "filing_date"),
-    )
+    __table_args__ = (Index("ix_filings_cik_filing_date", "cik", "filing_date"),)
 
 
 class RedditPostModel(Base, TimestampMixin):
@@ -113,9 +112,7 @@ class RedditPostModel(Base, TimestampMixin):
     )
     flair: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
-    __table_args__ = (
-        Index("ix_reddit_posts_subreddit_created", "subreddit", "created_utc"),
-    )
+    __table_args__ = (Index("ix_reddit_posts_subreddit_created", "subreddit", "created_utc"),)
 
 
 class PriceDataModel(Base, TimestampMixin):
@@ -178,7 +175,18 @@ class EnrichedSignalModel(Base, TimestampMixin):
         nullable=False,
         index=True,
     )
+    embedding: Mapped[list[float] | None] = mapped_column(
+        VECTOR_VARIANT,
+        nullable=True,
+    )
 
     __table_args__ = (
         Index("ix_enriched_signals_symbol_type", "symbol", "signal_type"),
+        Index(
+            "ix_enriched_signals_embedding_ivfflat",
+            "embedding",
+            postgresql_using="ivfflat",
+            postgresql_with={"lists": 100},
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
     )
