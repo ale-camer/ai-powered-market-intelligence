@@ -81,3 +81,7 @@ class AlphaVantageError(ExtractorError):
 
 class DatabaseError(MarketIntelError):
     """Base exception for database, session, and loader errors."""
+
+
+class CacheError(MarketIntelError):
+    """Raised when caching or deduplication operations fail."""

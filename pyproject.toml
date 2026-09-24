@@ -51,6 +51,8 @@ storage = [
     "alembic>=1.13.0",
     "psycopg2-binary>=2.9.9",
     "pgvector>=0.3.0",
+    "redis>=5.0.0",
+    "prometheus-client>=0.20.0",
 ]
 
 nlp = [
