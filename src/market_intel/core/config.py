@@ -31,6 +31,22 @@ class Settings(BaseSettings):
     postgres_user: str = Field(default="market_intel_user", alias="POSTGRES_USER")
     postgres_password: str = Field(default="change-me", alias="POSTGRES_PASSWORD")
 
+    @property
+    def async_postgres_url(self) -> str:
+        """Return SQLAlchemy async connection string with asyncpg."""
+        return (
+            f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@"
+            f"{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+        )
+
+    @property
+    def sync_postgres_url(self) -> str:
+        """Return standard sync PostgreSQL connection string."""
+        return (
+            f"postgresql+psycopg2://{self.postgres_user}:{self.postgres_password}@"
+            f"{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+        )
+
     # Redis
     redis_url: str = Field(default="redis://localhost:6379/0", alias="REDIS_URL")
 
