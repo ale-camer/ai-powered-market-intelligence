@@ -154,9 +154,7 @@ def upgrade() -> None:
     )
     op.create_index(op.f("ix_price_data_symbol"), "price_data", ["symbol"], unique=False)
     op.create_index(op.f("ix_price_data_date"), "price_data", ["date"], unique=False)
-    op.create_index(
-        "ix_price_data_symbol_date", "price_data", ["symbol", "date"], unique=False
-    )
+    op.create_index("ix_price_data_symbol_date", "price_data", ["symbol", "date"], unique=False)
 
     # 5. Table: enriched_signals
     op.create_table(

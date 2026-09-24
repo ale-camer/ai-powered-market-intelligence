@@ -211,6 +211,7 @@ def test_enriched_signals_model_structure() -> None:
         "summary",
         "entities",
         "timestamp",
+        "embedding",
         "created_at",
         "updated_at",
     }
@@ -222,6 +223,7 @@ def test_enriched_signals_model_structure() -> None:
     assert "ix_enriched_signals_signal_type" in index_names
     assert "ix_enriched_signals_timestamp" in index_names
     assert "ix_enriched_signals_symbol_type" in index_names
+    assert "ix_enriched_signals_embedding_ivfflat" in index_names
 
 
 @pytest.mark.unit
