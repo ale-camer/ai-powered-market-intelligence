@@ -19,6 +19,17 @@ from market_intel.core.exceptions import (
     RateLimitError,
 )
 from market_intel.core.logger import configure_logging, get_logger
+from market_intel.core.schemas import (
+    ArticleSchema,
+    EnrichedSignalSchema,
+    FilingSchema,
+    FinancialMetricsSchema,
+    FundamentalsSchema,
+    NewsAPIResponseSchema,
+    PostSchema,
+    PriceSchema,
+    SourceSchema,
+)
 
 __all__ = [
     "Settings",
@@ -38,4 +49,13 @@ __all__ = [
     "CACHE_MISSES_TOTAL",
     "configure_logging",
     "get_logger",
+    "SourceSchema",
+    "ArticleSchema",
+    "NewsAPIResponseSchema",
+    "FinancialMetricsSchema",
+    "FilingSchema",
+    "PostSchema",
+    "PriceSchema",
+    "FundamentalsSchema",
+    "EnrichedSignalSchema",
 ]

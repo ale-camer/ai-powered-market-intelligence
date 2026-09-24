@@ -44,7 +44,10 @@ class RedditExtractor:
             for sub in subreddits:
                 subreddit = self.reddit.subreddit(sub)
                 for submission in subreddit.top(time_filter=time_filter, limit=limit):
+                    submission_id = getattr(submission, "id", None)
+                    post_id_val = submission_id if isinstance(submission_id, str) else ""
                     post = PostSchema(
+                        post_id=post_id_val,
                         subreddit=sub,
                         title=submission.title,
                         body=getattr(submission, "selftext", None),
