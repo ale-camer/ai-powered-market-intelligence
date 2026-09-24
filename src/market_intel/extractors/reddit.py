@@ -34,7 +34,7 @@ class RedditExtractor:
 
         Returns:
             A list of PostSchema objects representing the fetched posts.
-            
+
         Raises:
             AuthenticationError: If OAuth authentication fails.
             RedditError: For other PRAW related errors.
@@ -44,15 +44,16 @@ class RedditExtractor:
             for sub in subreddits:
                 subreddit = self.reddit.subreddit(sub)
                 for submission in subreddit.top(time_filter=time_filter, limit=limit):
+                    submission_id = getattr(submission, "id", None)
+                    post_id_val = submission_id if isinstance(submission_id, str) else ""
                     post = PostSchema(
+                        post_id=post_id_val,
                         subreddit=sub,
                         title=submission.title,
                         body=getattr(submission, "selftext", None),
                         score=submission.score,
                         num_comments=submission.num_comments,
-                        created_utc=datetime.fromtimestamp(
-                            submission.created_utc, tz=UTC
-                        ),
+                        created_utc=datetime.fromtimestamp(submission.created_utc, tz=UTC),
                         flair=getattr(submission, "link_flair_text", None),
                     )
                     posts.append(post)

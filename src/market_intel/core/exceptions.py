@@ -77,3 +77,11 @@ class AlphaVantageError(ExtractorError):
     ) -> None:
         super().__init__(message, *args)
         self.status_code = status_code
+
+
+class DatabaseError(MarketIntelError):
+    """Base exception for database, session, and loader errors."""
+
+
+class CacheError(MarketIntelError):
+    """Raised when caching or deduplication operations fail."""

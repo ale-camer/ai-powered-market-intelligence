@@ -20,14 +20,14 @@ def mock_submissions_data() -> dict:
             "recent": {
                 "form": ["10-K", "10-Q", "8-K"],
                 "accessionNumber": [
-                    "0000320193-21-000105", 
-                    "0000320193-21-000106", 
-                    "0000320193-21-000107"
+                    "0000320193-21-000105",
+                    "0000320193-21-000106",
+                    "0000320193-21-000107",
                 ],
                 "filingDate": ["2021-10-29", "2021-12-30", "2021-09-29"],
-                "primaryDocument": ["apple-10k.htm", "apple-10q.htm", "apple-8k.htm"]
+                "primaryDocument": ["apple-10k.htm", "apple-10q.htm", "apple-8k.htm"],
             }
-        }
+        },
     }
 
 
@@ -94,6 +94,6 @@ async def test_rate_limit_exceeded() -> None:
     client = httpx.AsyncClient(transport=transport)
 
     extractor = SecEdgarExtractor(client=client, max_retries=1)
-    
+
     with pytest.raises(RateLimitError):
         await extractor.fetch_filings(cik="1234567890", form_type="10-K")
