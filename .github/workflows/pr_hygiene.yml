@@ -1,0 +1,25 @@
+name: PR Hygiene & Conventional Commits
+
+'on':
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  check-pr-title:
+    name: Validate Conventional Commits Title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR Title Format
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "Inspecting PR title: '$PR_TITLE'"
+          # Regex enforcing: type(optional-scope): description
+          REGEX="^(feat|fix|docs|test|chore|refactor|perf|ci)(\([a-zA-Z0-9_-]+\))?: .{1,100}$"
+          if [[ ! "$PR_TITLE" =~ $REGEX ]]; then
+            echo "ERROR: PR title does not conform to Conventional Commits specification."
+            echo "Allowed types: feat, fix, docs, test, chore, refactor, perf, ci"
+            echo "Example: feat(api): add real-time websocket alert streaming"
+            exit 1
+          fi
+          echo "PR title conforms to Conventional Commits specification."

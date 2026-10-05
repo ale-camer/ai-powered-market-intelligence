@@ -57,6 +57,9 @@ check: lint typecheck ## Run all static analysis
 test: ## Run the full test suite
 	.venv/bin/pytest tests/ --cov=src --cov-report=term-missing
 
+.PHONY: ci
+ci: check test ## Run full CI pipeline checks locally (lint, typecheck, tests, coverage)
+
 .PHONY: test-unit
 test-unit: ## Run only unit tests
 	.venv/bin/pytest tests/unit/ -m unit
