@@ -7,6 +7,18 @@ from market_intel.core.cache import (
     generate_fingerprint,
     normalize_url,
 )
+from market_intel.core.celery_app import (
+    MaxRetriesExceededError,
+    calculate_backoff_delay,
+    celery_app,
+    clear_dlq,
+    create_celery_app,
+    enrich_article_task,
+    generate_embedding_task,
+    get_dlq_messages,
+    route_to_dlq,
+    send_alert_task,
+)
 from market_intel.core.config import Settings, get_settings
 from market_intel.core.exceptions import (
     AuthenticationError,
@@ -85,4 +97,14 @@ __all__ = [
     "AlertsResponse",
     "create_access_token",
     "verify_access_token",
+    "celery_app",
+    "create_celery_app",
+    "enrich_article_task",
+    "generate_embedding_task",
+    "send_alert_task",
+    "route_to_dlq",
+    "calculate_backoff_delay",
+    "MaxRetriesExceededError",
+    "get_dlq_messages",
+    "clear_dlq",
 ]
