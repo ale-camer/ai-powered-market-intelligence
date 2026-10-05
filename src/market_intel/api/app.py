@@ -595,9 +595,26 @@ class MarketIntelASGIApp:
         if not _HAS_FASTAPI:
             return None
 
+        openapi_tags = [
+            {"name": "Health", "description": "Service health and status endpoints."},
+            {"name": "Signals", "description": "Filtered enriched market signals queries."},
+            {"name": "Summaries", "description": "AI-generated executive summaries."},
+            {"name": "Alerts", "description": "Anomaly detection alerts."},
+            {"name": "Observability", "description": "Prometheus metrics endpoints."},
+        ]
+
         fastapi_inst = FastAPI(
             title=self.title,
+            description=(
+                "Production REST API for querying enriched signals, "
+                "AI-generated summaries, anomaly alerts, and system health."
+            ),
             version=self.version,
+            contact={
+                "name": "API Support",
+                "email": "support@market-intel.local",
+            },
+            openapi_tags=openapi_tags,
             docs_url="/docs",
             openapi_url="/openapi.json",
         )
