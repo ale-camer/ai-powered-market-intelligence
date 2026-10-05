@@ -96,6 +96,12 @@ class Settings(BaseSettings):
         alias="SENTIMENT_BATCH_SIZE",
     )
 
+    # Named Entity Recognition (NER) / SpaCy
+    spacy_ner_model: str = Field(
+        default="en_core_web_trf",
+        alias="SPACY_NER_MODEL",
+    )
+
     # SEC EDGAR
     sec_edgar_email: str = Field(
         default="your_email@example.com",

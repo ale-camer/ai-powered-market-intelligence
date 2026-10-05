@@ -22,9 +22,11 @@ from market_intel.core.logger import configure_logging, get_logger
 from market_intel.core.schemas import (
     ArticleSchema,
     EnrichedSignalSchema,
+    EntityItem,
     FilingSchema,
     FinancialMetricsSchema,
     FundamentalsSchema,
+    NERResult,
     NewsAPIResponseSchema,
     PostSchema,
     PriceSchema,
@@ -60,4 +62,6 @@ __all__ = [
     "FundamentalsSchema",
     "EnrichedSignalSchema",
     "SentimentResult",
+    "EntityItem",
+    "NERResult",
 ]
