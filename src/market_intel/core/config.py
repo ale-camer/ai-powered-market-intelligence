@@ -172,6 +172,14 @@ class Settings(BaseSettings):
         default="",
         alias="API_PREFIX",
     )
+    jwt_algorithm: str = Field(
+        default="HS256",
+        alias="JWT_ALGORITHM",
+    )
+    jwt_expiration_seconds: int = Field(
+        default=3600,
+        alias="JWT_EXPIRATION_SECONDS",
+    )
 
 
 @lru_cache(maxsize=1)
