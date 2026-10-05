@@ -1,0 +1,55 @@
+# ==============================================================================
+# Gitleaks Configuration - AI-Powered Market Intelligence
+# Automated Secret Leak Detection and High-Entropy Credential Scanning
+# ==============================================================================
+
+title = "Gitleaks Configuration for AI-Powered Market Intelligence"
+
+[[rules]]
+id = "openai-api-key"
+description = "OpenAI API Secret Key"
+regex = '''(?i)(openai[_-]?api[_-]?key|sk-[a-zA-Z0-9]{20,T3BlbkFJ[a-zA-Z0-9]{20,}|sk-proj-[a-zA-Z0-9_\-]{60,})'''
+keywords = ["sk-", "openai"]
+
+[[rules]]
+id = "aws-access-token"
+description = "AWS Access Key and Secret Tokens"
+regex = '''(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
+keywords = ["AKIA", "ASIA", "aws_access_key_id"]
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic High-Entropy API Key or Token"
+regex = '''(?i)(api[_-]?key|secret[_-]?key|auth[_-]?token|access[_-]?token)\s*[:=]\s*["']([0-9a-zA-Z\-_]{24,})["']'''
+entropy = 3.5
+keywords = ["api_key", "secret_key", "auth_token", "access_token"]
+
+[[rules]]
+id = "unencrypted-private-key"
+description = "Unencrypted Cryptographic Private Key"
+regex = '''-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'''
+keywords = ["BEGIN PRIVATE KEY", "BEGIN RSA PRIVATE KEY", "BEGIN EC PRIVATE KEY"]
+
+[[rules]]
+id = "slack-webhook"
+description = "Slack Incoming Webhook URL"
+regex = '''https://hooks\.slack\.com/services/T[a-zA-Z0-9_]{8}/B[a-zA-Z0-9_]{8,12}/[a-zA-Z0-9_]{24}'''
+keywords = ["hooks.slack.com"]
+
+[allowlist]
+description = "Allowlisted test fixtures, mock data, and documentation examples"
+paths = [
+  '''tests/.*''',
+  '''docs/.*''',
+  '''pyproject\.toml''',
+  '''Makefile''',
+  '''\.github/workflows/.*''',
+]
+regexes = [
+  '''change-me.*''',
+  '''test_password''',
+  '''mock-.*''',
+  '''dummy-.*''',
+  '''ci-test-secret-key.*''',
+  '''sk-mock-.*''',
+]

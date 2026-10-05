@@ -511,4 +511,3 @@ def test_get_openai_client_with_valid_key(monkeypatch: pytest.MonkeyPatch) -> No
     client = analyzer._get_openai_client()
     assert client is not None
     mock_openai_cls.assert_called_once_with(api_key="sk-mock-valid-key-for-test")
-

@@ -138,3 +138,18 @@ def verify_access_token(
                 return None
 
     return raw_payload
+
+
+def constant_time_compare(val1: str | bytes, val2: str | bytes) -> bool:
+    """Perform a timing-attack safe comparison of two strings or byte sequences.
+
+    Args:
+        val1: First string or byte sequence to compare.
+        val2: Second string or byte sequence to compare.
+
+    Returns:
+        True if contents are identical; False otherwise.
+    """
+    b1 = val1.encode("utf-8") if isinstance(val1, str) else val1
+    b2 = val2.encode("utf-8") if isinstance(val2, str) else val2
+    return hmac.compare_digest(b1, b2)

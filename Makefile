@@ -50,6 +50,17 @@ typecheck: ## Run mypy type checker
 .PHONY: check
 check: lint typecheck ## Run all static analysis
 
+.PHONY: security
+security: ## Run SAST security scan and vulnerability audit
+	@if [ -x .venv/bin/bandit ]; then \
+		.venv/bin/bandit -c bandit.yaml -r src/; \
+	elif command -v bandit >/dev/null 2>&1; then \
+		bandit -c bandit.yaml -r src/; \
+	else \
+		echo "⚠️  bandit not found in .venv. Install with 'pip install bandit' or 'make deps'."; \
+	fi
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Testing
 # ──────────────────────────────────────────────────────────────────────────────

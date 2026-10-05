@@ -10,6 +10,7 @@ from typing import Any, cast
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from market_intel.api.security_middleware import SecurityHeadersMiddleware
 from market_intel.api.websocket import (
     ASGIWebSocketAdapter,
     ConnectionManager,
@@ -33,6 +34,7 @@ logger = get_logger("market_intel.api")
 
 try:
     from fastapi import FastAPI, HTTPException, Path, Query, status
+    from fastapi.middleware.cors import CORSMiddleware
 
     _HAS_FASTAPI = True
 except ImportError:
@@ -711,6 +713,16 @@ class MarketIntelASGIApp:
 
         cast(Any, fastapi_inst).middleware("http")(prometheus_middleware)
 
+        # Register CORS hardening and OWASP security headers middleware
+        fastapi_inst.add_middleware(
+            CORSMiddleware,
+            allow_origins=self.settings.cors_allowed_origins,
+            allow_credentials=self.settings.cors_allow_credentials,
+            allow_methods=["GET", "POST", "OPTIONS"],
+            allow_headers=["*"],
+        )
+        fastapi_inst.add_middleware(SecurityHeadersMiddleware)
+
         return fastapi_inst
 
     def openapi(self) -> dict[str, object]:
@@ -776,6 +788,21 @@ class MarketIntelASGIApp:
         query_str = raw_query.decode("utf-8") if isinstance(raw_query, bytes) else str(raw_query)
         query_params = urllib.parse.parse_qs(query_str)
 
+        # CORS extraction
+        raw_headers = cast(list[tuple[bytes, bytes]], scope.get("headers") or [])
+        origin_str: str | None = None
+        for h_key, h_val in raw_headers:
+            if h_key.lower() == b"origin":
+                origin_str = h_val.decode("utf-8") if isinstance(h_val, bytes) else str(h_val)
+                break
+
+        is_allowed_origin = False
+        if origin_str and (
+            "*" in self.settings.cors_allowed_origins
+            or origin_str in self.settings.cors_allowed_origins
+        ):
+            is_allowed_origin = True
+
         async def send_response(
             status_code: int,
             body: bytes,
@@ -784,14 +811,27 @@ class MarketIntelASGIApp:
             duration = time.perf_counter() - req_start_time
             record_request_metric(method, path, status_code, duration)
             if callable(send):
+                headers = [
+                    (b"content-type", content_type.encode("utf-8")),
+                    (b"content-length", str(len(body)).encode("utf-8")),
+                    (b"x-content-type-options", b"nosniff"),
+                    (b"x-frame-options", b"DENY"),
+                    (b"x-xss-protection", b"1; mode=block"),
+                    (b"strict-transport-security", b"max-age=31536000; includeSubDomains"),
+                    (b"content-security-policy", b"default-src 'self'; frame-ancestors 'none'"),
+                    (b"referrer-policy", b"strict-origin-when-cross-origin"),
+                    (b"permissions-policy", b"geolocation=(), camera=(), microphone=()"),
+                ]
+                if is_allowed_origin and origin_str:
+                    headers.append((b"access-control-allow-origin", origin_str.encode("utf-8")))
+                    if self.settings.cors_allow_credentials:
+                        headers.append((b"access-control-allow-credentials", b"true"))
+
                 await send(
                     {
                         "type": "http.response.start",
                         "status": status_code,
-                        "headers": [
-                            (b"content-type", content_type.encode("utf-8")),
-                            (b"content-length", str(len(body)).encode("utf-8")),
-                        ],
+                        "headers": headers,
                     }
                 )
                 await send(
@@ -800,6 +840,30 @@ class MarketIntelASGIApp:
                         "body": body,
                     }
                 )
+
+        if method == "OPTIONS":
+            cors_headers = [
+                (b"content-type", b"text/plain; charset=utf-8"),
+                (b"content-length", b"0"),
+                (b"access-control-allow-methods", b"GET, POST, OPTIONS"),
+                (b"access-control-allow-headers", b"*"),
+                (b"x-content-type-options", b"nosniff"),
+                (b"x-frame-options", b"DENY"),
+                (b"x-xss-protection", b"1; mode=block"),
+                (b"strict-transport-security", b"max-age=31536000; includeSubDomains"),
+                (b"content-security-policy", b"default-src 'self'; frame-ancestors 'none'"),
+                (b"referrer-policy", b"strict-origin-when-cross-origin"),
+                (b"permissions-policy", b"geolocation=(), camera=(), microphone=()"),
+            ]
+            if is_allowed_origin and origin_str:
+                cors_headers.append((b"access-control-allow-origin", origin_str.encode("utf-8")))
+                if self.settings.cors_allow_credentials:
+                    cors_headers.append((b"access-control-allow-credentials", b"true"))
+
+            if callable(send):
+                await send({"type": "http.response.start", "status": 200, "headers": cors_headers})
+                await send({"type": "http.response.body", "body": b""})
+            return
 
         if path == "/metrics" and method == "GET":
             metrics_payload, metrics_ct = generate_metrics_payload()
