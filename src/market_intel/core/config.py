@@ -124,6 +124,20 @@ class Settings(BaseSettings):
         alias="OPENAI_MAX_TPM",
     )
 
+    # Time-Series Anomaly Detection
+    anomaly_zscore_threshold: float = Field(
+        default=3.0,
+        alias="ANOMALY_ZSCORE_THRESHOLD",
+    )
+    anomaly_iqr_multiplier: float = Field(
+        default=1.5,
+        alias="ANOMALY_IQR_MULTIPLIER",
+    )
+    anomaly_iforest_contamination: float = Field(
+        default=0.05,
+        alias="ANOMALY_IFOREST_CONTAMINATION",
+    )
+
     # SEC EDGAR
     sec_edgar_email: str = Field(
         default="your_email@example.com",

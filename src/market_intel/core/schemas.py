@@ -670,3 +670,26 @@ class DocumentEnrichmentResult(BaseModel):
     embedding: list[float]
     model_summary: str
     model_embedding: str
+
+
+class AnomalyResult(BaseModel):
+    """Result of statistical or machine learning anomaly detection on financial data."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "is_anomaly": True,
+                "score": 3.42,
+                "method": "zscore",
+                "details": {"metric": "volume", "threshold": 3.0, "value": 150000000},
+            }
+        },
+    )
+
+    is_anomaly: bool
+    score: float
+    method: str
+    details: dict[str, object] | None = None

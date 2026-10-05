@@ -1,6 +1,7 @@
 """NLP and AI transformation pipelines for market intelligence."""
 
 from market_intel.core.schemas import (
+    AnomalyResult,
     DocumentEnrichmentResult,
     EmbeddingResult,
     EntityItem,
@@ -8,6 +9,7 @@ from market_intel.core.schemas import (
     SentimentResult,
     SummaryResult,
 )
+from market_intel.transformers.anomaly import TimeSeriesAnomalyDetector
 from market_intel.transformers.embeddings import (
     AsyncRateLimiter,
     DocumentTransformer,
@@ -30,4 +32,6 @@ __all__ = [
     "SummaryResult",
     "EmbeddingResult",
     "DocumentEnrichmentResult",
+    "TimeSeriesAnomalyDetector",
+    "AnomalyResult",
 ]
