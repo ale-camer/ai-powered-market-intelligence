@@ -1,0 +1,38 @@
+# ==============================================================================
+# Example Terraform Variables Configuration
+# Copy this file to terraform.tfvars and customize for your environment
+# ==============================================================================
+
+aws_region   = "us-east-1"
+environment  = "production"
+project_name = "market-intelligence"
+
+# Networking
+vpc_cidr           = "10.0.0.0/16"
+availability_zones = ["us-east-1a", "us-east-1b"]
+
+public_subnet_cidrs      = ["10.0.1.0/24", "10.0.2.0/24"]
+private_app_subnet_cidrs = ["10.0.10.0/24", "10.0.11.0/24"]
+private_db_subnet_cidrs  = ["10.0.20.0/24", "10.0.21.0/24"]
+
+# Database (PostgreSQL 16 + pgvector)
+rds_instance_class    = "db.t4g.medium"
+rds_allocated_storage = 20
+db_name               = "market_intel"
+db_username           = "market_intel_admin"
+
+# Cache (ElastiCache Redis)
+redis_node_type          = "cache.t4g.medium"
+redis_num_cache_clusters = 2
+
+# Compute (ECS Fargate)
+app_port  = 8000
+app_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/market-intel:latest"
+
+ecs_api_cpu           = 512
+ecs_api_memory        = 1024
+ecs_api_desired_count = 2
+
+ecs_worker_cpu           = 512
+ecs_worker_memory        = 1024
+ecs_worker_desired_count = 2
