@@ -7,6 +7,7 @@ from collections.abc import Mapping
 from datetime import UTC, datetime
 
 from market_intel.core.logger import get_logger
+from market_intel.core.metrics import set_websocket_connections
 from market_intel.core.schemas import AlertItem
 from market_intel.core.security import verify_access_token
 
@@ -125,6 +126,7 @@ class ConnectionManager:
             logger.info(
                 f"WebSocket client connected. Active connections: {len(self.active_connections)}"
             )
+            set_websocket_connections(len(self.active_connections))
 
     def disconnect(self, websocket: object) -> None:
         """Unregister client connection.
@@ -137,6 +139,7 @@ class ConnectionManager:
             logger.info(
                 f"WebSocket client disconnected. Active connections: {len(self.active_connections)}"
             )
+            set_websocket_connections(len(self.active_connections))
 
     async def send_personal_message(
         self,
