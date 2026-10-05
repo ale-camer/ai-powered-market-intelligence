@@ -159,6 +159,20 @@ class Settings(BaseSettings):
     )
     sentry_dsn: str = Field(default="", alias="SENTRY_DSN")
 
+    # API & FastAPI Delivery
+    api_title: str = Field(
+        default="AI-Powered Market Intelligence API",
+        alias="API_TITLE",
+    )
+    api_version: str = Field(
+        default="0.1.0",
+        alias="API_VERSION",
+    )
+    api_prefix: str = Field(
+        default="",
+        alias="API_PREFIX",
+    )
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:

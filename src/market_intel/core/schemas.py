@@ -2,18 +2,20 @@
 
 import uuid
 from datetime import UTC, datetime
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 from market_intel.core.cache import normalize_url
-from market_intel.loaders.models import (
-    ArticleModel,
-    EnrichedSignalModel,
-    FilingModel,
-    PriceDataModel,
-    RedditPostModel,
-)
+
+if TYPE_CHECKING:
+    from market_intel.loaders.models import (
+        ArticleModel,
+        EnrichedSignalModel,
+        FilingModel,
+        PriceDataModel,
+        RedditPostModel,
+    )
 
 
 def ensure_utc_datetime(v: object) -> datetime:
@@ -127,8 +129,10 @@ class ArticleSchema(BaseModel):
             )
         return cls.model_validate(obj, from_attributes=True)
 
-    def to_orm(self) -> ArticleModel:
+    def to_orm(self) -> "ArticleModel":
         """Convert this schema to an ArticleModel ORM instance."""
+        from market_intel.loaders.models import ArticleModel
+
         return ArticleModel(
             id=self.id or uuid.uuid4(),
             source_id=self.source.id,
@@ -242,8 +246,10 @@ class FilingSchema(BaseModel):
             )
         return cls.model_validate(obj, from_attributes=True)
 
-    def to_orm(self) -> FilingModel:
+    def to_orm(self) -> "FilingModel":
         """Convert this schema to a FilingModel ORM instance."""
+        from market_intel.loaders.models import FilingModel
+
         return FilingModel(
             id=self.id or uuid.uuid4(),
             cik=self.cik,
@@ -301,8 +307,10 @@ class PostSchema(BaseModel):
         """Adapter converting a RedditPostModel ORM instance to PostSchema."""
         return cls.model_validate(obj, from_attributes=True)
 
-    def to_orm(self) -> RedditPostModel:
+    def to_orm(self) -> "RedditPostModel":
         """Convert this schema to a RedditPostModel ORM instance."""
+        from market_intel.loaders.models import RedditPostModel
+
         return RedditPostModel(
             id=self.id or uuid.uuid4(),
             post_id=self.post_id,
@@ -370,8 +378,10 @@ class PriceSchema(BaseModel):
         """Adapter converting a PriceDataModel ORM instance to PriceSchema."""
         return cls.model_validate(obj, from_attributes=True)
 
-    def to_orm(self) -> PriceDataModel:
+    def to_orm(self) -> "PriceDataModel":
         """Convert this schema to a PriceDataModel ORM instance."""
+        from market_intel.loaders.models import PriceDataModel
+
         return PriceDataModel(
             id=self.id or uuid.uuid4(),
             symbol=self.symbol,
@@ -423,6 +433,16 @@ class EnrichedSignalSchema(BaseModel):
     embedding: list[float] | None = None
     timestamp: datetime
 
+    @field_validator("id", mode="before")
+    @classmethod
+    def validate_id(cls, v: object) -> uuid.UUID | None:
+        """Parse UUID or string representation of UUID."""
+        if v is None or isinstance(v, uuid.UUID):
+            return v
+        if isinstance(v, str):
+            return uuid.UUID(v)
+        raise ValueError(f"Expected UUID or str, got {type(v).__name__}")
+
     @field_validator("symbol", mode="before")
     @classmethod
     def validate_symbol_uppercase(cls, v: object) -> str:
@@ -455,8 +475,10 @@ class EnrichedSignalSchema(BaseModel):
         """Adapter converting an EnrichedSignalModel ORM instance to EnrichedSignalSchema."""
         return cls.model_validate(obj, from_attributes=True)
 
-    def to_orm(self) -> EnrichedSignalModel:
+    def to_orm(self) -> "EnrichedSignalModel":
         """Convert this schema to an EnrichedSignalModel ORM instance."""
+        from market_intel.loaders.models import EnrichedSignalModel
+
         return EnrichedSignalModel(
             id=self.id or uuid.uuid4(),
             source_type=self.source_type,
@@ -693,3 +715,176 @@ class AnomalyResult(BaseModel):
     score: float
     method: str
     details: dict[str, object] | None = None
+
+
+class HealthResponse(BaseModel):
+    """Service health status and runtime metadata."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "status": "healthy",
+                "version": "0.1.0",
+                "environment": "development",
+                "timestamp": "2026-10-05T12:00:00Z",
+                "details": {"database": "connected", "cache": "connected"},
+            }
+        },
+    )
+
+    status: str = "healthy"
+    version: str
+    environment: str
+    timestamp: datetime
+    details: dict[str, object] | None = None
+
+    @field_validator("timestamp", mode="before")
+    @classmethod
+    def validate_timestamp(cls, v: object) -> datetime:
+        """Parse datetime ensuring UTC timezone."""
+        return ensure_utc_datetime(v)
+
+
+class SignalsQueryResponse(BaseModel):
+    """Paginated enriched signals response."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "items": [],
+                "total": 0,
+                "limit": 20,
+                "offset": 0,
+            }
+        },
+    )
+
+    items: list[EnrichedSignalSchema]
+    total: int
+    limit: int
+    offset: int
+
+
+class CompanySummaryResponse(BaseModel):
+    """AI-generated executive summary and metrics for a specific ticker."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "ticker": "AAPL",
+                "summary": "Apple Inc. showed strong quarterly earnings growth...",
+                "model_used": "gpt-4o-mini",
+                "last_updated": "2026-10-05T12:00:00Z",
+                "metrics": {"sentiment_score": 0.82, "signals_count": 14},
+            }
+        },
+    )
+
+    ticker: str
+    summary: str
+    model_used: str | None = None
+    last_updated: datetime | None = None
+    metrics: dict[str, object] | None = None
+
+    @field_validator("ticker", mode="before")
+    @classmethod
+    def validate_ticker(cls, v: object) -> str:
+        """Convert ticker to uppercase."""
+        if not isinstance(v, str):
+            raise ValueError(f"Ticker must be a string, got {type(v).__name__}")
+        cleaned = v.strip().upper()
+        if not cleaned:
+            raise ValueError("Ticker cannot be empty")
+        return cleaned
+
+    @field_validator("last_updated", mode="before")
+    @classmethod
+    def validate_last_updated(cls, v: object) -> datetime | None:
+        """Parse optional datetime ensuring UTC timezone."""
+        if v is None:
+            return None
+        return ensure_utc_datetime(v)
+
+
+class AlertItem(BaseModel):
+    """Active anomaly alert item."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "id": "123e4567-e89b-12d3-a456-426614174005",
+                "symbol": "AAPL",
+                "method": "zscore",
+                "score": 3.42,
+                "severity": "high",
+                "details": {"metric": "volume", "threshold": 3.0, "value": 150000000},
+                "timestamp": "2026-10-05T12:00:00Z",
+            }
+        },
+    )
+
+    id: uuid.UUID | None = None
+    symbol: str
+    method: str
+    score: float
+    severity: str = "medium"
+    details: dict[str, object] | None = None
+    timestamp: datetime
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def validate_id(cls, v: object) -> uuid.UUID | None:
+        """Parse UUID or string representation of UUID."""
+        if v is None or isinstance(v, uuid.UUID):
+            return v
+        if isinstance(v, str):
+            return uuid.UUID(v)
+        raise ValueError(f"Expected UUID or str, got {type(v).__name__}")
+
+    @field_validator("symbol", mode="before")
+    @classmethod
+    def validate_symbol(cls, v: object) -> str:
+        """Convert symbol to uppercase."""
+        if not isinstance(v, str):
+            raise ValueError(f"Symbol must be a string, got {type(v).__name__}")
+        cleaned = v.strip().upper()
+        if not cleaned:
+            raise ValueError("Symbol cannot be empty")
+        return cleaned
+
+    @field_validator("timestamp", mode="before")
+    @classmethod
+    def validate_timestamp(cls, v: object) -> datetime:
+        """Parse datetime ensuring UTC timezone."""
+        return ensure_utc_datetime(v)
+
+
+class AlertsResponse(BaseModel):
+    """Collection of active anomaly alerts."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "items": [],
+                "total": 0,
+            }
+        },
+    )
+
+    items: list[AlertItem]
+    total: int
