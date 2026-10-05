@@ -66,7 +66,7 @@ nlp = [
 ]
 
 orchestration = [
-    # Issue #14-#18 dependencies go here
+    "apache-airflow>=2.9.0",
 ]
 
 all = [
@@ -109,6 +109,7 @@ exclude = ["tests/", "infra/"]
 # ──────────────────────────────────────────────────────────────────────────────
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src", "."]
 asyncio_mode = "auto"
 addopts = "--tb=short --strict-markers -v"
 markers = [

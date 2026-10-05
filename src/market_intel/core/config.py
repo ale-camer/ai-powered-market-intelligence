@@ -63,6 +63,14 @@ class Settings(BaseSettings):
         default="change-me-fernet-key",
         alias="AIRFLOW__CORE__FERNET_KEY",
     )
+    airflow_alert_email: str = Field(
+        default="alerts@market-intel.local",
+        alias="AIRFLOW_ALERT_EMAIL",
+    )
+    airflow_dag_sla_hours: float = Field(
+        default=2.0,
+        alias="AIRFLOW_DAG_SLA_HOURS",
+    )
 
     # Data Source API Keys
     newsapi_api_key: str = Field(default="", alias="NEWSAPI_API_KEY")
