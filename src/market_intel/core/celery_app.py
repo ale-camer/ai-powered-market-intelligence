@@ -591,9 +591,7 @@ def generate_embedding_task(
                     _run_sync(transformer.generate_embeddings_batch_async([cleaned])),
                 )
                 embedding_vector = (
-                    batch_res[0].embedding
-                    if batch_res
-                    else [0.0] * DEFAULT_EMBEDDING_DIMENSIONS
+                    batch_res[0].embedding if batch_res else [0.0] * DEFAULT_EMBEDDING_DIMENSIONS
                 )
             except Exception as emb_exc:
                 logger.debug("DocumentTransformer invocation fallback: %s", emb_exc)

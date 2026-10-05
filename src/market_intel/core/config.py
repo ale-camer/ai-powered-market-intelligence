@@ -1,9 +1,9 @@
 """Centralized configuration loading using pydantic-settings."""
 
 from functools import lru_cache
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import Field
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -181,6 +181,16 @@ class Settings(BaseSettings):
         alias="JWT_EXPIRATION_SECONDS",
     )
 
+    # CORS Security
+    cors_allowed_origins: list[str] = Field(
+        default_factory=lambda: ["http://localhost:3000", "http://localhost:8000"],
+        alias="CORS_ALLOWED_ORIGINS",
+    )
+    cors_allow_credentials: bool = Field(
+        default=True,
+        alias="CORS_ALLOW_CREDENTIALS",
+    )
+
     # Celery Async Workers & DLQ
     celery_broker_url: str = Field(
         default="redis://localhost:6379/0",
@@ -213,6 +223,67 @@ class Settings(BaseSettings):
         if self.celery_result_backend:
             return self.celery_result_backend
         return f"db+{self.sync_postgres_url}"
+
+    @field_validator("cors_allowed_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v: object) -> list[str]:
+        """Normalize CORS origins from JSON array string, comma-separated string, or iterable."""
+        if isinstance(v, str):
+            v_trimmed = v.strip()
+            if v_trimmed.startswith("[") and v_trimmed.endswith("]"):
+                import json
+
+                try:
+                    parsed = json.loads(v_trimmed)
+                    if isinstance(parsed, list):
+                        return [str(item).strip() for item in parsed if str(item).strip()]
+                except Exception:
+                    pass
+            return [origin.strip() for origin in v_trimmed.split(",") if origin.strip()]
+        if isinstance(v, (list, tuple, set)):
+            return [str(item).strip() for item in v if str(item).strip()]
+        return ["http://localhost:3000", "http://localhost:8000"]
+
+    @model_validator(mode="after")
+    def validate_security_settings(self) -> Self:
+        """Validate production secrets and CORS policy hardening."""
+        # 1. CORS Hardening: Disallow wildcard origin when credentials are enabled
+        if self.cors_allow_credentials and "*" in self.cors_allowed_origins:
+            raise ValueError(
+                "CORS security violation: Disallowed wildcard '*' origin when "
+                "cors_allow_credentials=True."
+            )
+
+        # 2. Production Secret Key Hardening
+        if self.app_env == "production":
+            raw_key = self.secret_key.strip()
+            if len(raw_key) < 32:
+                raise ValueError(
+                    f"Production security error: SECRET_KEY must be at least 32 characters long "
+                    f"(got {len(raw_key)} characters)."
+                )
+
+            weak_exact_or_substring = (
+                "change-me",
+                "change-me-in-production",
+                "replace-me",
+                "your-secret-key",
+            )
+            weak_exact = (
+                "secret",
+                "admin",
+                "password",
+                "12345678",
+                "default",
+                "test",
+            )
+            key_lower = raw_key.lower()
+            if any(sub in key_lower for sub in weak_exact_or_substring) or key_lower in weak_exact:
+                raise ValueError(
+                    "Production security error: SECRET_KEY cannot use weak or placeholder defaults."
+                )
+
+        return self
 
 
 @lru_cache(maxsize=1)
