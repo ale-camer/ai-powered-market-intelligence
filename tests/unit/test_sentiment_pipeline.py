@@ -422,3 +422,93 @@ def test_get_openai_client_no_key(monkeypatch: pytest.MonkeyPatch) -> None:
 
     analyzer = SentimentAnalyzer()
     assert analyzer._get_openai_client() is None
+
+
+@pytest.mark.unit
+@pytest.mark.issue_19
+def test_infer_finbert_batch_pytorch_flow(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test full PyTorch inference flow in _infer_finbert_batch with mocked torch."""
+    import sys
+
+    mock_torch = MagicMock()
+    mock_torch.no_grad.return_value.__enter__ = MagicMock()
+    mock_torch.no_grad.return_value.__exit__ = MagicMock()
+    # Mock softmax output: positive=0.85, negative=0.05, neutral=0.10
+    mock_torch.softmax.return_value.cpu.return_value.numpy.return_value = [[0.85, 0.05, 0.10]]
+    monkeypatch.setitem(sys.modules, "torch", mock_torch)
+
+    class FakeTorchModel:
+        def __init__(self) -> None:
+            self.config = MagicMock()
+            self.config.id2label = {0: "positive", 1: "negative", 2: "neutral"}
+            self._param = MagicMock()
+            self._param.device = "cpu"
+
+        def parameters(self) -> object:
+            yield self._param
+
+        def __call__(self, **kwargs: object) -> object:
+            mock_out = MagicMock()
+            mock_out.logits = MagicMock()
+            return mock_out
+
+    mock_tokenizer = MagicMock()
+    mock_tokenizer.return_value = {"input_ids": MagicMock()}
+
+    analyzer = SentimentAnalyzer(model=FakeTorchModel(), tokenizer=mock_tokenizer)
+    results = analyzer._infer_finbert_batch(["Record revenues and profit surge!"])
+
+    assert len(results) == 1
+    assert results[0]["label"] == "positive"
+    assert results[0]["score"] == 0.8
+    assert results[0]["confidence"] == 0.85
+
+
+@pytest.mark.unit
+@pytest.mark.issue_19
+def test_get_model_and_tokenizer_lazy_loading(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test lazy loading of model and tokenizer with GPU branch check."""
+    import sys
+
+    mock_torch = MagicMock()
+    mock_torch.cuda.is_available.return_value = True
+    monkeypatch.setitem(sys.modules, "torch", mock_torch)
+
+    mock_transformers = MagicMock()
+    mock_auto_tokenizer = MagicMock()
+    mock_auto_model = MagicMock()
+    mock_transformers.AutoTokenizer = mock_auto_tokenizer
+    mock_transformers.AutoModelForSequenceClassification = mock_auto_model
+
+    mock_loaded_model = MagicMock()
+    mock_auto_model.from_pretrained.return_value = mock_loaded_model
+    monkeypatch.setitem(sys.modules, "transformers", mock_transformers)
+
+    analyzer = SentimentAnalyzer()
+    model, tokenizer = analyzer._get_model_and_tokenizer()
+
+    assert model is mock_loaded_model
+    mock_loaded_model.to.assert_called_with("cuda")
+
+
+@pytest.mark.unit
+@pytest.mark.issue_19
+def test_get_openai_client_with_valid_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify _get_openai_client successfully instantiates OpenAI client when key is set."""
+    import sys
+
+    mock_openai_module = MagicMock()
+    mock_openai_cls = MagicMock()
+    mock_openai_module.OpenAI = mock_openai_cls
+    monkeypatch.setitem(sys.modules, "openai", mock_openai_module)
+
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-mock-valid-key-for-test")
+    from market_intel.core.config import get_settings
+
+    get_settings.cache_clear()
+
+    analyzer = SentimentAnalyzer()
+    client = analyzer._get_openai_client()
+    assert client is not None
+    mock_openai_cls.assert_called_once_with(api_key="sk-mock-valid-key-for-test")
+
