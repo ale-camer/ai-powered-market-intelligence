@@ -1,5 +1,6 @@
 """Production-ready asynchronous REST API for market intelligence signals, summaries, and alerts."""
 
+import inspect
 import json
 import urllib.parse
 from datetime import UTC, datetime
@@ -7,6 +8,12 @@ from datetime import UTC, datetime
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from market_intel.api.websocket import (
+    ASGIWebSocketAdapter,
+    ConnectionManager,
+    connection_manager,
+    handle_websocket_alerts,
+)
 from market_intel.core.config import Settings, get_settings
 from market_intel.core.logger import get_logger
 from market_intel.core.schemas import (
@@ -562,6 +569,7 @@ class MarketIntelASGIApp:
         self.version = self.settings.api_version
         self.state = AppState(session_factory=session_factory, settings=self.settings)
         self.dependency_overrides: dict[object, object] = {}
+        self.connection_manager: ConnectionManager = connection_manager
         self._fastapi_app: object = self._init_fastapi() if _HAS_FASTAPI else None
 
     def _init_fastapi(self) -> object:
@@ -640,6 +648,16 @@ class MarketIntelASGIApp:
             tags=["Alerts"],
         )
 
+        async def websocket_alerts_route(
+            websocket: object,
+            token: str | None = None,
+        ) -> None:
+            await handle_websocket_alerts(
+                websocket, token, self.connection_manager, self.settings.secret_key
+            )
+
+        fastapi_inst.add_api_websocket_route("/ws/alerts", websocket_alerts_route)
+
         return fastapi_inst
 
     def openapi(self) -> dict[str, object]:
@@ -664,16 +682,36 @@ class MarketIntelASGIApp:
 
         scope_type = scope.get("type")
 
-        if scope_type == "lifespan":
-            if callable(receive) and callable(send):
-                while True:
-                    message = await receive()
-                    msg_type = message.get("type")
-                    if msg_type == "lifespan.startup":
-                        await send({"type": "lifespan.startup.complete"})
-                    elif msg_type == "lifespan.shutdown":
-                        await send({"type": "lifespan.shutdown.complete"})
-                        return
+        if scope_type == "lifespan" and callable(receive) and callable(send):
+            while True:
+                message = await receive()
+                msg_type = message.get("type")
+                if msg_type == "lifespan.startup":
+                    await send({"type": "lifespan.startup.complete"})
+                elif msg_type == "lifespan.shutdown":
+                    await send({"type": "lifespan.shutdown.complete"})
+                    return
+        if scope_type == "websocket":
+            ws_path = str(scope.get("path", "/"))
+            if ws_path == "/ws/alerts":
+                raw_query = scope.get("query_string", b"")
+                query_str = (
+                    raw_query.decode("utf-8")
+                    if isinstance(raw_query, bytes)
+                    else str(raw_query)
+                )
+                query_params = urllib.parse.parse_qs(query_str)
+                token = query_params.get("token", [None])[0]
+                adapter = ASGIWebSocketAdapter(scope, receive, send)
+                await handle_websocket_alerts(
+                    adapter, token, self.connection_manager, self.settings.secret_key
+                )
+                return
+
+            if callable(send):
+                res = send({"type": "websocket.close", "code": 1000})
+                if inspect.isawaitable(res):
+                    await res
             return
 
         if scope_type != "http":

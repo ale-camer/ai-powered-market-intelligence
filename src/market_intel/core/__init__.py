@@ -42,6 +42,7 @@ from market_intel.core.schemas import (
     SourceSchema,
     SummaryResult,
 )
+from market_intel.core.security import create_access_token, verify_access_token
 
 __all__ = [
     "Settings",
@@ -82,4 +83,6 @@ __all__ = [
     "CompanySummaryResponse",
     "AlertItem",
     "AlertsResponse",
+    "create_access_token",
+    "verify_access_token",
 ]
