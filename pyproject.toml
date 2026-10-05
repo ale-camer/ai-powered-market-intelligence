@@ -56,7 +56,9 @@ storage = [
 ]
 
 nlp = [
-    # Issue #10-#13 dependencies go here
+    "transformers>=4.40.0",
+    "torch>=2.2.0",
+    "openai>=1.20.0",
 ]
 
 orchestration = [

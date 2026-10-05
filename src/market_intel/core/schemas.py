@@ -523,3 +523,28 @@ class NewsAPIResponseSchema(BaseModel):
     articles: list[ArticleSchema] = Field(default_factory=list)
     code: str | None = None
     message: str | None = None
+
+
+class SentimentResult(BaseModel):
+    """Result of financial sentiment analysis for an input document or text snippet."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "label": "positive",
+                "score": 0.82,
+                "model_used": "ProsusAI/finbert",
+                "confidence": 0.94,
+                "explanation": "Strong quarterly revenue growth exceeding market expectations.",
+            }
+        },
+    )
+
+    label: str
+    score: float = Field(ge=-1.0, le=1.0)
+    model_used: str
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+    explanation: str | None = None

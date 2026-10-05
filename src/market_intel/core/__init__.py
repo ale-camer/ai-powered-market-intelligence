@@ -28,6 +28,7 @@ from market_intel.core.schemas import (
     NewsAPIResponseSchema,
     PostSchema,
     PriceSchema,
+    SentimentResult,
     SourceSchema,
 )
 
@@ -58,4 +59,5 @@ __all__ = [
     "PriceSchema",
     "FundamentalsSchema",
     "EnrichedSignalSchema",
+    "SentimentResult",
 ]
