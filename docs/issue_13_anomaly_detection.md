@@ -75,7 +75,8 @@ make test-issue ID=13
 make check
 ```
 
-### 6. Git & Finish
+### 6. Git & Finish (Cierre de Issue y Milestone M3)
 ```bash
 make finish-issue ID=13 MSG="feat(nlp): implement statistical and isolation forest anomaly detection on time-series"
+make finish-milestone MILESTONE=M3
 ```
