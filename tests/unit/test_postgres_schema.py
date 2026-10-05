@@ -2,6 +2,7 @@
 
 import uuid
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 from alembic.config import Config
@@ -400,3 +401,22 @@ def test_database_error_exception() -> None:
     err = DatabaseError("Connection timeout")
     assert str(err) == "Connection timeout"
     assert err.message == "Connection timeout"
+
+
+@pytest.mark.unit
+@pytest.mark.issue_19
+def test_alembic_online_migrations(tmp_path: Path) -> None:
+    """Validate Alembic online migrations execution against SQLite."""
+    from alembic import command
+
+    db_path = tmp_path / "migration_test.db"
+    sqlite_url = f"sqlite+aiosqlite:///{db_path}"
+
+    alembic_cfg = Config("alembic.ini")
+    alembic_cfg.set_main_option("sqlalchemy.url", sqlite_url)
+
+    # Run online upgrade
+    command.upgrade(alembic_cfg, "0001_initial_schema")
+
+    # Run online downgrade
+    command.downgrade(alembic_cfg, "base")
