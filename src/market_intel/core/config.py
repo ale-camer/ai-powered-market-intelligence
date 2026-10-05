@@ -76,7 +76,67 @@ class Settings(BaseSettings):
 
     # OpenAI / AI Providers
     openai_api_key: str = Field(default="", alias="OPENAI_API_KEY")
-    openai_model: str = Field(default="gpt-4o-mini", alias="OPENAI_MODEL")
+    openai_model: str = Field(default="gpt-4o", alias="OPENAI_MODEL")
+
+    # Sentiment Analysis / NLP
+    finbert_model_name: str = Field(
+        default="ProsusAI/finbert",
+        alias="FINBERT_MODEL_NAME",
+    )
+    sentiment_confidence_threshold: float = Field(
+        default=0.65,
+        alias="SENTIMENT_CONFIDENCE_THRESHOLD",
+    )
+    sentiment_min_text_length: int = Field(
+        default=30,
+        alias="SENTIMENT_MIN_TEXT_LENGTH",
+    )
+    sentiment_batch_size: int = Field(
+        default=32,
+        alias="SENTIMENT_BATCH_SIZE",
+    )
+
+    # Named Entity Recognition (NER) / SpaCy
+    spacy_ner_model: str = Field(
+        default="en_core_web_trf",
+        alias="SPACY_NER_MODEL",
+    )
+
+    # Document Summarization & Vector Embeddings
+    openai_summary_model: str = Field(
+        default="gpt-4o-mini",
+        alias="OPENAI_SUMMARY_MODEL",
+    )
+    openai_embedding_model: str = Field(
+        default="text-embedding-3-small",
+        alias="OPENAI_EMBEDDING_MODEL",
+    )
+    openai_embedding_dimensions: int = Field(
+        default=1536,
+        alias="OPENAI_EMBEDDING_DIMENSIONS",
+    )
+    openai_max_rpm: int = Field(
+        default=500,
+        alias="OPENAI_MAX_RPM",
+    )
+    openai_max_tpm: int = Field(
+        default=200000,
+        alias="OPENAI_MAX_TPM",
+    )
+
+    # Time-Series Anomaly Detection
+    anomaly_zscore_threshold: float = Field(
+        default=3.0,
+        alias="ANOMALY_ZSCORE_THRESHOLD",
+    )
+    anomaly_iqr_multiplier: float = Field(
+        default=1.5,
+        alias="ANOMALY_IQR_MULTIPLIER",
+    )
+    anomaly_iforest_contamination: float = Field(
+        default=0.05,
+        alias="ANOMALY_IFOREST_CONTAMINATION",
+    )
 
     # SEC EDGAR
     sec_edgar_email: str = Field(

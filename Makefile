@@ -128,7 +128,7 @@ endif
 		--title "Release milestone $(MILESTONE)" \
 		--body "Merges all issues from milestone $(MILESTONE) into production." \
 		--label "release"
-	gh pr merge --merge --admin
+	gh pr merge develop --merge --admin
 	git checkout develop
 	git pull origin develop
 	@echo "✅ Milestone $(MILESTONE) merged to main."

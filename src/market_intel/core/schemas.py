@@ -523,3 +523,173 @@ class NewsAPIResponseSchema(BaseModel):
     articles: list[ArticleSchema] = Field(default_factory=list)
     code: str | None = None
     message: str | None = None
+
+
+class SentimentResult(BaseModel):
+    """Result of financial sentiment analysis for an input document or text snippet."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "label": "positive",
+                "score": 0.82,
+                "model_used": "ProsusAI/finbert",
+                "confidence": 0.94,
+                "explanation": "Strong quarterly revenue growth exceeding market expectations.",
+            }
+        },
+    )
+
+    label: str
+    score: float = Field(ge=-1.0, le=1.0)
+    model_used: str
+    confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+    explanation: str | None = None
+
+
+class EntityItem(BaseModel):
+    """Detailed entity mention extracted by NER with character boundaries."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "text": "Apple Inc.",
+                "label": "ORG",
+                "start_char": 0,
+                "end_char": 10,
+            }
+        },
+    )
+
+    text: str
+    label: str
+    start_char: int | None = None
+    end_char: int | None = None
+
+
+class NERResult(BaseModel):
+    """Financial named entity recognition, normalized ticker, and sector classification."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "entities": {
+                    "ORG": ["Apple Inc.", "Microsoft Corp."],
+                    "MONEY": ["$25 billion"],
+                    "PERCENT": ["15%"],
+                    "DATE": ["Q4 2026"],
+                },
+                "tickers": ["AAPL", "MSFT"],
+                "sectors": ["Information Technology"],
+                "detailed_entities": [
+                    {"text": "Apple Inc.", "label": "ORG", "start_char": 0, "end_char": 10}
+                ],
+                "model_used": "en_core_web_trf",
+            }
+        },
+    )
+
+    entities: dict[str, list[str]] = Field(default_factory=dict)
+    tickers: list[str] = Field(default_factory=list)
+    sectors: list[str] = Field(default_factory=list)
+    detailed_entities: list[EntityItem] = Field(default_factory=list)
+    model_used: str = "en_core_web_trf"
+
+
+class SummaryResult(BaseModel):
+    """Result of document financial summarization."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "summary": "Apple posted Q4 revenue of $94.9B, up 6% YoY driven by iPhone sales.",
+                "model_used": "gpt-4o-mini",
+                "tokens_used": 118,
+            }
+        },
+    )
+
+    summary: str
+    model_used: str
+    tokens_used: int | None = None
+
+
+class EmbeddingResult(BaseModel):
+    """Vector embedding result for financial document or text snippet."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "embedding": [0.012, -0.045, 0.128],
+                "dimensions": 1536,
+                "model_used": "text-embedding-3-small",
+                "tokens_used": 42,
+            }
+        },
+    )
+
+    embedding: list[float]
+    dimensions: int = 1536
+    model_used: str
+    tokens_used: int | None = None
+
+
+class DocumentEnrichmentResult(BaseModel):
+    """Combined document enrichment result containing both financial summary and embedding."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "summary": "Apple posted record revenue...",
+                "embedding": [0.012, -0.045, 0.128],
+                "model_summary": "gpt-4o-mini",
+                "model_embedding": "text-embedding-3-small",
+            }
+        },
+    )
+
+    summary: str
+    embedding: list[float]
+    model_summary: str
+    model_embedding: str
+
+
+class AnomalyResult(BaseModel):
+    """Result of statistical or machine learning anomaly detection on financial data."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "is_anomaly": True,
+                "score": 3.42,
+                "method": "zscore",
+                "details": {"metric": "volume", "threshold": 3.0, "value": 150000000},
+            }
+        },
+    )
+
+    is_anomaly: bool
+    score: float
+    method: str
+    details: dict[str, object] | None = None
