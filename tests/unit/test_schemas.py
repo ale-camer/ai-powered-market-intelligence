@@ -7,14 +7,19 @@ import pytest
 from pydantic import ValidationError
 
 from market_intel.core.schemas import (
+    AlertItem,
+    AlertsResponse,
     ArticleSchema,
+    CompanySummaryResponse,
     EnrichedSignalSchema,
     FilingSchema,
     FinancialMetricsSchema,
     FundamentalsSchema,
+    HealthResponse,
     NewsAPIResponseSchema,
     PostSchema,
     PriceSchema,
+    SignalsQueryResponse,
     SourceSchema,
     ensure_utc_datetime,
 )
@@ -308,6 +313,7 @@ def test_fundamentals_and_newsapi_response_schemas() -> None:
 
 @pytest.mark.unit
 @pytest.mark.issue_9
+@pytest.mark.issue_15
 def test_json_schema_extra_examples_present() -> None:
     """Verify that json_schema_extra examples are defined on all core models."""
     models_to_check = [
@@ -319,8 +325,61 @@ def test_json_schema_extra_examples_present() -> None:
         PriceSchema,
         EnrichedSignalSchema,
         FundamentalsSchema,
+        HealthResponse,
+        SignalsQueryResponse,
+        CompanySummaryResponse,
+        AlertItem,
+        AlertsResponse,
     ]
     for model_cls in models_to_check:
         config = model_cls.model_config
         assert "json_schema_extra" in config
         assert "example" in config["json_schema_extra"]
+
+
+@pytest.mark.unit
+@pytest.mark.issue_15
+def test_api_response_schemas_validation() -> None:
+    """Validate construction and validators of API response schemas."""
+    # HealthResponse
+    hr = HealthResponse(
+        status="healthy",
+        version="0.1.0",
+        environment="test",
+        timestamp="2026-10-05T12:00:00Z",
+    )
+    assert hr.timestamp.tzinfo == UTC
+
+    # SignalsQueryResponse
+    sqr = SignalsQueryResponse(items=[], total=0, limit=20, offset=0)
+    assert sqr.total == 0
+
+    # CompanySummaryResponse (uppercase ticker)
+    csr = CompanySummaryResponse(
+        ticker="aapl",
+        summary="Test summary",
+        last_updated="2026-10-05T12:00:00Z",
+    )
+    assert csr.ticker == "AAPL"
+    assert csr.last_updated is not None
+    assert csr.last_updated.tzinfo == UTC
+
+    # Empty ticker validation error
+    with pytest.raises(ValidationError):
+        CompanySummaryResponse(ticker="", summary="Test")
+
+    # AlertItem (uppercase symbol)
+    alert = AlertItem(
+        id=str(uuid.uuid4()),
+        symbol="msft",
+        method="zscore",
+        score=3.5,
+        timestamp="2026-10-05T12:00:00Z",
+    )
+    assert alert.symbol == "MSFT"
+    assert isinstance(alert.id, uuid.UUID)
+
+    # AlertsResponse
+    ar = AlertsResponse(items=[alert], total=1)
+    assert ar.total == 1
+    assert len(ar.items) == 1

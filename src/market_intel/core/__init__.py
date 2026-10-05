@@ -20,8 +20,11 @@ from market_intel.core.exceptions import (
 )
 from market_intel.core.logger import configure_logging, get_logger
 from market_intel.core.schemas import (
+    AlertItem,
+    AlertsResponse,
     AnomalyResult,
     ArticleSchema,
+    CompanySummaryResponse,
     DocumentEnrichmentResult,
     EmbeddingResult,
     EnrichedSignalSchema,
@@ -29,11 +32,13 @@ from market_intel.core.schemas import (
     FilingSchema,
     FinancialMetricsSchema,
     FundamentalsSchema,
+    HealthResponse,
     NERResult,
     NewsAPIResponseSchema,
     PostSchema,
     PriceSchema,
     SentimentResult,
+    SignalsQueryResponse,
     SourceSchema,
     SummaryResult,
 )
@@ -72,4 +77,9 @@ __all__ = [
     "EmbeddingResult",
     "DocumentEnrichmentResult",
     "AnomalyResult",
+    "HealthResponse",
+    "SignalsQueryResponse",
+    "CompanySummaryResponse",
+    "AlertItem",
+    "AlertsResponse",
 ]
