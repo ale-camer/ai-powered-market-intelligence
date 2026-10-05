@@ -60,6 +60,7 @@ nlp = [
     "torch>=2.2.0",
     "openai>=1.20.0",
     "spacy>=3.7.0",
+    "tiktoken>=0.7.0",
 ]
 
 orchestration = [

@@ -102,6 +102,28 @@ class Settings(BaseSettings):
         alias="SPACY_NER_MODEL",
     )
 
+    # Document Summarization & Vector Embeddings
+    openai_summary_model: str = Field(
+        default="gpt-4o-mini",
+        alias="OPENAI_SUMMARY_MODEL",
+    )
+    openai_embedding_model: str = Field(
+        default="text-embedding-3-small",
+        alias="OPENAI_EMBEDDING_MODEL",
+    )
+    openai_embedding_dimensions: int = Field(
+        default=1536,
+        alias="OPENAI_EMBEDDING_DIMENSIONS",
+    )
+    openai_max_rpm: int = Field(
+        default=500,
+        alias="OPENAI_MAX_RPM",
+    )
+    openai_max_tpm: int = Field(
+        default=200000,
+        alias="OPENAI_MAX_TPM",
+    )
+
     # SEC EDGAR
     sec_edgar_email: str = Field(
         default="your_email@example.com",
