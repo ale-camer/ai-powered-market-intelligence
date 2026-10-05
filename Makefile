@@ -153,6 +153,18 @@ docker-logs: ## Tail container logs across services
 	docker compose logs -f
 
 # ──────────────────────────────────────────────────────────────────────────────
+# Infrastructure & Terraform
+# ──────────────────────────────────────────────────────────────────────────────
+.PHONY: terraform-fmt
+terraform-fmt: ## Format Terraform configuration files
+	terraform -chdir=infra/terraform fmt -recursive
+
+.PHONY: terraform-validate
+terraform-validate: ## Validate Terraform HCL files
+	terraform -chdir=infra/terraform init -backend=false
+	terraform -chdir=infra/terraform validate
+
+# ──────────────────────────────────────────────────────────────────────────────
 # Utilities
 # ──────────────────────────────────────────────────────────────────────────────
 .PHONY: clean
