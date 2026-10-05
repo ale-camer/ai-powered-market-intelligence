@@ -7,6 +7,18 @@ from market_intel.core.cache import (
     generate_fingerprint,
     normalize_url,
 )
+from market_intel.core.celery_app import (
+    MaxRetriesExceededError,
+    calculate_backoff_delay,
+    celery_app,
+    clear_dlq,
+    create_celery_app,
+    enrich_article_task,
+    generate_embedding_task,
+    get_dlq_messages,
+    route_to_dlq,
+    send_alert_task,
+)
 from market_intel.core.config import Settings, get_settings
 from market_intel.core.exceptions import (
     AuthenticationError,
@@ -19,9 +31,25 @@ from market_intel.core.exceptions import (
     RateLimitError,
 )
 from market_intel.core.logger import configure_logging, get_logger
+from market_intel.core.metrics import (
+    DB_QUERY_DURATION_SECONDS,
+    ENRICHMENT_QUEUE_DEPTH,
+    HTTP_REQUEST_DURATION_SECONDS,
+    HTTP_REQUESTS_TOTAL,
+    PROMETHEUS_REGISTRY,
+    WEBSOCKET_ACTIVE_CONNECTIONS,
+    generate_metrics_payload,
+    record_request_metric,
+    set_queue_depth,
+    set_websocket_connections,
+    track_db_query,
+)
 from market_intel.core.schemas import (
+    AlertItem,
+    AlertsResponse,
     AnomalyResult,
     ArticleSchema,
+    CompanySummaryResponse,
     DocumentEnrichmentResult,
     EmbeddingResult,
     EnrichedSignalSchema,
@@ -29,14 +57,17 @@ from market_intel.core.schemas import (
     FilingSchema,
     FinancialMetricsSchema,
     FundamentalsSchema,
+    HealthResponse,
     NERResult,
     NewsAPIResponseSchema,
     PostSchema,
     PriceSchema,
     SentimentResult,
+    SignalsQueryResponse,
     SourceSchema,
     SummaryResult,
 )
+from market_intel.core.security import create_access_token, verify_access_token
 
 __all__ = [
     "Settings",
@@ -72,4 +103,32 @@ __all__ = [
     "EmbeddingResult",
     "DocumentEnrichmentResult",
     "AnomalyResult",
+    "HealthResponse",
+    "SignalsQueryResponse",
+    "CompanySummaryResponse",
+    "AlertItem",
+    "AlertsResponse",
+    "create_access_token",
+    "verify_access_token",
+    "celery_app",
+    "create_celery_app",
+    "enrich_article_task",
+    "generate_embedding_task",
+    "send_alert_task",
+    "route_to_dlq",
+    "calculate_backoff_delay",
+    "MaxRetriesExceededError",
+    "get_dlq_messages",
+    "clear_dlq",
+    "HTTP_REQUEST_DURATION_SECONDS",
+    "HTTP_REQUESTS_TOTAL",
+    "DB_QUERY_DURATION_SECONDS",
+    "ENRICHMENT_QUEUE_DEPTH",
+    "WEBSOCKET_ACTIVE_CONNECTIONS",
+    "PROMETHEUS_REGISTRY",
+    "record_request_metric",
+    "track_db_query",
+    "set_queue_depth",
+    "set_websocket_connections",
+    "generate_metrics_payload",
 ]

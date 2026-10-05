@@ -63,6 +63,14 @@ class Settings(BaseSettings):
         default="change-me-fernet-key",
         alias="AIRFLOW__CORE__FERNET_KEY",
     )
+    airflow_alert_email: str = Field(
+        default="alerts@market-intel.local",
+        alias="AIRFLOW_ALERT_EMAIL",
+    )
+    airflow_dag_sla_hours: float = Field(
+        default=2.0,
+        alias="AIRFLOW_DAG_SLA_HOURS",
+    )
 
     # Data Source API Keys
     newsapi_api_key: str = Field(default="", alias="NEWSAPI_API_KEY")
@@ -150,6 +158,61 @@ class Settings(BaseSettings):
         alias="PROMETHEUS_MULTIPROC_DIR",
     )
     sentry_dsn: str = Field(default="", alias="SENTRY_DSN")
+
+    # API & FastAPI Delivery
+    api_title: str = Field(
+        default="AI-Powered Market Intelligence API",
+        alias="API_TITLE",
+    )
+    api_version: str = Field(
+        default="0.1.0",
+        alias="API_VERSION",
+    )
+    api_prefix: str = Field(
+        default="",
+        alias="API_PREFIX",
+    )
+    jwt_algorithm: str = Field(
+        default="HS256",
+        alias="JWT_ALGORITHM",
+    )
+    jwt_expiration_seconds: int = Field(
+        default=3600,
+        alias="JWT_EXPIRATION_SECONDS",
+    )
+
+    # Celery Async Workers & DLQ
+    celery_broker_url: str = Field(
+        default="redis://localhost:6379/0",
+        alias="CELERY_BROKER_URL",
+    )
+    celery_result_backend: str | None = Field(
+        default=None,
+        alias="CELERY_RESULT_BACKEND",
+    )
+    celery_default_queue: str = Field(
+        default="celery",
+        alias="CELERY_DEFAULT_QUEUE",
+    )
+    celery_dlq_name: str = Field(
+        default="market_intel.dlq",
+        alias="CELERY_DLQ_NAME",
+    )
+    celery_max_retries: int = Field(
+        default=3,
+        alias="CELERY_MAX_RETRIES",
+    )
+    celery_retry_base_delay: int = Field(
+        default=60,
+        alias="CELERY_RETRY_BASE_DELAY",
+    )
+
+    @property
+    def resolved_celery_result_backend(self) -> str:
+        """Return resolved Celery result backend URL (PostgreSQL by default)."""
+        if self.celery_result_backend:
+            return self.celery_result_backend
+        return f"db+{self.sync_postgres_url}"
 
 
 @lru_cache(maxsize=1)

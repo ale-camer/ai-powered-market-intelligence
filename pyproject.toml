@@ -66,7 +66,12 @@ nlp = [
 ]
 
 orchestration = [
-    # Issue #14-#18 dependencies go here
+    "apache-airflow>=2.9.0",
+    "fastapi>=0.111.0",
+    "uvicorn>=0.30.0",
+    "pyjwt>=2.8.0",
+    "websockets>=12.0",
+    "celery>=5.3.0",
 ]
 
 all = [
@@ -109,6 +114,7 @@ exclude = ["tests/", "infra/"]
 # ──────────────────────────────────────────────────────────────────────────────
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src", "."]
 asyncio_mode = "auto"
 addopts = "--tb=short --strict-markers -v"
 markers = [
