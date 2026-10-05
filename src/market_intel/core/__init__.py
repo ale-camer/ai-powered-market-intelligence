@@ -31,6 +31,19 @@ from market_intel.core.exceptions import (
     RateLimitError,
 )
 from market_intel.core.logger import configure_logging, get_logger
+from market_intel.core.metrics import (
+    DB_QUERY_DURATION_SECONDS,
+    ENRICHMENT_QUEUE_DEPTH,
+    HTTP_REQUEST_DURATION_SECONDS,
+    HTTP_REQUESTS_TOTAL,
+    PROMETHEUS_REGISTRY,
+    WEBSOCKET_ACTIVE_CONNECTIONS,
+    generate_metrics_payload,
+    record_request_metric,
+    set_queue_depth,
+    set_websocket_connections,
+    track_db_query,
+)
 from market_intel.core.schemas import (
     AlertItem,
     AlertsResponse,
@@ -107,4 +120,15 @@ __all__ = [
     "MaxRetriesExceededError",
     "get_dlq_messages",
     "clear_dlq",
+    "HTTP_REQUEST_DURATION_SECONDS",
+    "HTTP_REQUESTS_TOTAL",
+    "DB_QUERY_DURATION_SECONDS",
+    "ENRICHMENT_QUEUE_DEPTH",
+    "WEBSOCKET_ACTIVE_CONNECTIONS",
+    "PROMETHEUS_REGISTRY",
+    "record_request_metric",
+    "track_db_query",
+    "set_queue_depth",
+    "set_websocket_connections",
+    "generate_metrics_payload",
 ]

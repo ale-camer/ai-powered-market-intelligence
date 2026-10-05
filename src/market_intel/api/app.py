@@ -2,8 +2,10 @@
 
 import inspect
 import json
+import time
 import urllib.parse
 from datetime import UTC, datetime
+from typing import Any, cast
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -16,6 +18,7 @@ from market_intel.api.websocket import (
 )
 from market_intel.core.config import Settings, get_settings
 from market_intel.core.logger import get_logger
+from market_intel.core.metrics import generate_metrics_payload, record_request_metric
 from market_intel.core.schemas import (
     AlertItem,
     AlertsResponse,
@@ -83,6 +86,19 @@ def generate_openapi_spec(settings: Settings) -> dict[str, object]:
             ),
         },
         "paths": {
+            "/metrics": {
+                "get": {
+                    "summary": "Prometheus Metrics",
+                    "description": "Expose application metrics in Prometheus exposition format.",
+                    "operationId": "get_metrics",
+                    "responses": {
+                        "200": {
+                            "description": "Prometheus Metrics Output",
+                            "content": {"text/plain": {"schema": {"type": "string"}}},
+                        }
+                    },
+                }
+            },
             "/health": {
                 "get": {
                     "summary": "Health Check",
@@ -658,6 +674,43 @@ class MarketIntelASGIApp:
 
         fastapi_inst.add_api_websocket_route("/ws/alerts", websocket_alerts_route)
 
+        # Observability Metrics endpoint
+        async def metrics_endpoint() -> object:
+            payload, content_type = generate_metrics_payload()
+            from fastapi.responses import Response
+
+            return Response(content=payload, media_type=content_type)
+
+        fastapi_inst.add_api_route(
+            "/metrics",
+            metrics_endpoint,
+            methods=["GET"],
+            tags=["Observability"],
+            include_in_schema=True,
+        )
+
+        async def prometheus_middleware(request: object, call_next: object) -> object:
+            start_time = time.perf_counter()
+            status_code = 500
+            try:
+                if callable(call_next):
+                    response = await call_next(request)
+                    status_code = int(getattr(response, "status_code", 200))
+                    return response
+                return None
+            finally:
+                duration = time.perf_counter() - start_time
+                req_method = str(getattr(request, "method", "GET"))
+                req_path = str(getattr(getattr(request, "url", None), "path", "/"))
+                record_request_metric(
+                    method=req_method,
+                    endpoint=req_path,
+                    status_code=status_code,
+                    duration_seconds=duration,
+                )
+
+        cast(Any, fastapi_inst).middleware("http")(prometheus_middleware)
+
         return fastapi_inst
 
     def openapi(self) -> dict[str, object]:
@@ -696,9 +749,7 @@ class MarketIntelASGIApp:
             if ws_path == "/ws/alerts":
                 raw_query = scope.get("query_string", b"")
                 query_str = (
-                    raw_query.decode("utf-8")
-                    if isinstance(raw_query, bytes)
-                    else str(raw_query)
+                    raw_query.decode("utf-8") if isinstance(raw_query, bytes) else str(raw_query)
                 )
                 query_params = urllib.parse.parse_qs(query_str)
                 token = query_params.get("token", [None])[0]
@@ -717,6 +768,8 @@ class MarketIntelASGIApp:
         if scope_type != "http":
             return
 
+        req_start_time = time.perf_counter()
+
         method = str(scope.get("method", "GET")).upper()
         path = str(scope.get("path", "/"))
         raw_query = scope.get("query_string", b"")
@@ -728,6 +781,8 @@ class MarketIntelASGIApp:
             body: bytes,
             content_type: str = "application/json",
         ) -> None:
+            duration = time.perf_counter() - req_start_time
+            record_request_metric(method, path, status_code, duration)
             if callable(send):
                 await send(
                     {
@@ -745,6 +800,11 @@ class MarketIntelASGIApp:
                         "body": body,
                     }
                 )
+
+        if path == "/metrics" and method == "GET":
+            metrics_payload, metrics_ct = generate_metrics_payload()
+            await send_response(200, metrics_payload, content_type=metrics_ct)
+            return
 
         if method != "GET":
             err_body = json.dumps({"detail": f"Method {method} Not Allowed"}).encode("utf-8")
