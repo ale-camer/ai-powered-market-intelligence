@@ -167,6 +167,13 @@ docker-logs: ## Tail container logs across services
 	docker compose logs -f
 
 # ──────────────────────────────────────────────────────────────────────────────
+# Documentation
+# ──────────────────────────────────────────────────────────────────────────────
+.PHONY: docs
+docs: ## Serve MkDocs documentation locally
+	.venv/bin/mkdocs serve
+
+# ──────────────────────────────────────────────────────────────────────────────
 # Infrastructure & Terraform
 # ──────────────────────────────────────────────────────────────────────────────
 .PHONY: terraform-fmt

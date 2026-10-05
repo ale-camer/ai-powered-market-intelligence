@@ -263,6 +263,14 @@ market_intel_daily = DAG(
     catchup=False,
     sla_miss_callback=sla_miss_alert,
     tags=["market-intel", "daily", "nlp", "storage"],
+    doc_md="""
+# Market Intelligence Daily Pipeline
+
+This DAG orchestrates the end-to-end data pipeline:
+1. **Ingest**: Fetches data from NewsAPI, SEC EDGAR, Reddit, and Alpha Vantage.
+2. **Transform**: Enriches data using NLP (FinBERT) and ML anomaly detection.
+3. **Load**: Persists enriched records to PostgreSQL/pgvector and updates Redis cache.
+    """,
 )
 
 with market_intel_daily:
