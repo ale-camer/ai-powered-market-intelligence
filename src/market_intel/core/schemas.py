@@ -548,3 +548,58 @@ class SentimentResult(BaseModel):
     model_used: str
     confidence: float = Field(default=1.0, ge=0.0, le=1.0)
     explanation: str | None = None
+
+
+class EntityItem(BaseModel):
+    """Detailed entity mention extracted by NER with character boundaries."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "text": "Apple Inc.",
+                "label": "ORG",
+                "start_char": 0,
+                "end_char": 10,
+            }
+        },
+    )
+
+    text: str
+    label: str
+    start_char: int | None = None
+    end_char: int | None = None
+
+
+class NERResult(BaseModel):
+    """Financial named entity recognition, normalized ticker, and sector classification."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "entities": {
+                    "ORG": ["Apple Inc.", "Microsoft Corp."],
+                    "MONEY": ["$25 billion"],
+                    "PERCENT": ["15%"],
+                    "DATE": ["Q4 2026"],
+                },
+                "tickers": ["AAPL", "MSFT"],
+                "sectors": ["Information Technology"],
+                "detailed_entities": [
+                    {"text": "Apple Inc.", "label": "ORG", "start_char": 0, "end_char": 10}
+                ],
+                "model_used": "en_core_web_trf",
+            }
+        },
+    )
+
+    entities: dict[str, list[str]] = Field(default_factory=dict)
+    tickers: list[str] = Field(default_factory=list)
+    sectors: list[str] = Field(default_factory=list)
+    detailed_entities: list[EntityItem] = Field(default_factory=list)
+    model_used: str = "en_core_web_trf"
