@@ -165,7 +165,7 @@ class Settings(BaseSettings):
         alias="API_TITLE",
     )
     api_version: str = Field(
-        default="0.1.0",
+        default="1.0.0",
         alias="API_VERSION",
     )
     api_prefix: str = Field(
