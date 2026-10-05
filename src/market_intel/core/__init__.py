@@ -20,6 +20,7 @@ from market_intel.core.exceptions import (
 )
 from market_intel.core.logger import configure_logging, get_logger
 from market_intel.core.schemas import (
+    AnomalyResult,
     ArticleSchema,
     DocumentEnrichmentResult,
     EmbeddingResult,
@@ -70,4 +71,5 @@ __all__ = [
     "SummaryResult",
     "EmbeddingResult",
     "DocumentEnrichmentResult",
+    "AnomalyResult",
 ]
