@@ -76,8 +76,7 @@ def test_create_celery_app_custom_settings() -> None:
     assert conf["task_default_queue"] == "custom_queue"
 
     queue_names = [
-        q["name"] if isinstance(q, dict) else getattr(q, "name", "")
-        for q in conf["task_queues"]
+        q["name"] if isinstance(q, dict) else getattr(q, "name", "") for q in conf["task_queues"]
     ]
     assert "custom_queue" in queue_names
     assert "custom.dlq" in queue_names
@@ -487,4 +486,3 @@ def test_create_celery_app_when_celery_available() -> None:
 
     assert app == mock_app_instance
     mock_app_instance.conf.update.assert_called_once()
-

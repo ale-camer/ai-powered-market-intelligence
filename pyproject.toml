@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "market-intel"
-version = "0.1.0"
+version = "1.0.0"
 description = "AI-Powered Market Intelligence — E2E data pipeline for financial signals"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -12,7 +12,7 @@ license = { text = "MIT" }
 authors = [{ name = "ale-camer" }]
 keywords = ["market-intelligence", "nlp", "airflow", "pgvector", "fintech"]
 classifiers = [
-    "Development Status :: 1 - Planning",
+    "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
 ]
@@ -36,6 +36,9 @@ dev = [
     "httpx>=0.27",
     "factory-boy>=3.3",
     "aiosqlite>=0.20.0",
+    "bandit>=1.7.8",
+    "pip-audit>=2.7.3",
+    "mkdocs-material>=9.0.0",
 ]
 
 ingestion = [

@@ -50,12 +50,26 @@ typecheck: ## Run mypy type checker
 .PHONY: check
 check: lint typecheck ## Run all static analysis
 
+.PHONY: security
+security: ## Run SAST security scan and vulnerability audit
+	@if [ -x .venv/bin/bandit ]; then \
+		.venv/bin/bandit -c bandit.yaml -r src/; \
+	elif command -v bandit >/dev/null 2>&1; then \
+		bandit -c bandit.yaml -r src/; \
+	else \
+		echo "⚠️  bandit not found in .venv. Install with 'pip install bandit' or 'make deps'."; \
+	fi
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Testing
 # ──────────────────────────────────────────────────────────────────────────────
 .PHONY: test
 test: ## Run the full test suite
 	.venv/bin/pytest tests/ --cov=src --cov-report=term-missing
+
+.PHONY: ci
+ci: check test ## Run full CI pipeline checks locally (lint, typecheck, tests, coverage)
 
 .PHONY: test-unit
 test-unit: ## Run only unit tests
@@ -132,6 +146,44 @@ endif
 	git checkout develop
 	git pull origin develop
 	@echo "✅ Milestone $(MILESTONE) merged to main."
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Container & Docker
+# ──────────────────────────────────────────────────────────────────────────────
+.PHONY: docker-build
+docker-build: ## Build Docker container images
+	docker compose build
+
+.PHONY: docker-up
+docker-up: ## Start full service stack in background
+	docker compose up -d
+
+.PHONY: docker-down
+docker-down: ## Stop and remove all service containers
+	docker compose down
+
+.PHONY: docker-logs
+docker-logs: ## Tail container logs across services
+	docker compose logs -f
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Documentation
+# ──────────────────────────────────────────────────────────────────────────────
+.PHONY: docs
+docs: ## Serve MkDocs documentation locally
+	.venv/bin/mkdocs serve
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Infrastructure & Terraform
+# ──────────────────────────────────────────────────────────────────────────────
+.PHONY: terraform-fmt
+terraform-fmt: ## Format Terraform configuration files
+	terraform -chdir=infra/terraform fmt -recursive
+
+.PHONY: terraform-validate
+terraform-validate: ## Validate Terraform HCL files
+	terraform -chdir=infra/terraform init -backend=false
+	terraform -chdir=infra/terraform validate
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Utilities

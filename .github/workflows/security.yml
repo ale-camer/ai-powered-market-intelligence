@@ -1,0 +1,101 @@
+name: Security Hardening & Vulnerability Pipeline
+
+'on':
+  pull_request:
+    branches: [develop, main]
+  schedule:
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sast-bandit:
+    name: SAST Scan (Bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Bandit SAST Scanner
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit>=1.7.8
+
+      - name: Run Bandit static security scan on src/
+        run: |
+          bandit -c bandit.yaml -r src/ -ll -ii
+
+  dependency-audit:
+    name: Dependency Audit (pip-audit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install pip-audit and project dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit>=2.7.3 -e ".[dev]"
+
+      - name: Audit installed packages for known vulnerabilities
+        run: |
+          pip-audit --desc on
+
+  secret-scan:
+    name: Secret Detection (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks secret leak detection
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  docker-trivy:
+    name: Container Vulnerability Scan (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build local container image for vulnerability scan
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: market-intel:security-test
+
+      - name: Run Trivy vulnerability scan on container
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: market-intel:security-test
+          format: table
+          exit-code: "0"
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH

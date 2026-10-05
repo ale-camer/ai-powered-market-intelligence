@@ -1,0 +1,12 @@
+site_name: AI-Powered Market Intelligence
+site_description: Documentation for the AI-Powered Market Intelligence pipeline.
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+nav:
+  - Home: index.md
+  - Architecture: architecture.md
+  - API Reference: api.md
+docs_dir: docs/site

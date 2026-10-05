@@ -1,0 +1,28 @@
+# ==============================================================================
+# Bandit SAST Configuration - AI-Powered Market Intelligence
+# Static Application Security Testing profile and rule overrides
+# ==============================================================================
+
+profiles:
+  default:
+    include:
+      - ANY
+
+exclude_dirs:
+  - ".venv"
+  - "tests"
+  - "infra"
+  - ".git"
+  - "__pycache__"
+  - "htmlcov"
+  - ".pytest_cache"
+  - "scratch"
+
+# Test exclusions:
+# B101: assert_used (common in python code and pytest)
+skips:
+  - "B101"
+
+# Severity and confidence levels
+severity: medium
+confidence: medium
