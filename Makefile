@@ -134,6 +134,25 @@ endif
 	@echo "✅ Milestone $(MILESTONE) merged to main."
 
 # ──────────────────────────────────────────────────────────────────────────────
+# Container & Docker
+# ──────────────────────────────────────────────────────────────────────────────
+.PHONY: docker-build
+docker-build: ## Build Docker container images
+	docker compose build
+
+.PHONY: docker-up
+docker-up: ## Start full service stack in background
+	docker compose up -d
+
+.PHONY: docker-down
+docker-down: ## Stop and remove all service containers
+	docker compose down
+
+.PHONY: docker-logs
+docker-logs: ## Tail container logs across services
+	docker compose logs -f
+
+# ──────────────────────────────────────────────────────────────────────────────
 # Utilities
 # ──────────────────────────────────────────────────────────────────────────────
 .PHONY: clean
