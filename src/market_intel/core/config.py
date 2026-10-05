@@ -76,7 +76,25 @@ class Settings(BaseSettings):
 
     # OpenAI / AI Providers
     openai_api_key: str = Field(default="", alias="OPENAI_API_KEY")
-    openai_model: str = Field(default="gpt-4o-mini", alias="OPENAI_MODEL")
+    openai_model: str = Field(default="gpt-4o", alias="OPENAI_MODEL")
+
+    # Sentiment Analysis / NLP
+    finbert_model_name: str = Field(
+        default="ProsusAI/finbert",
+        alias="FINBERT_MODEL_NAME",
+    )
+    sentiment_confidence_threshold: float = Field(
+        default=0.65,
+        alias="SENTIMENT_CONFIDENCE_THRESHOLD",
+    )
+    sentiment_min_text_length: int = Field(
+        default=30,
+        alias="SENTIMENT_MIN_TEXT_LENGTH",
+    )
+    sentiment_batch_size: int = Field(
+        default=32,
+        alias="SENTIMENT_BATCH_SIZE",
+    )
 
     # SEC EDGAR
     sec_edgar_email: str = Field(
