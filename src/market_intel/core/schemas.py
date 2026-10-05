@@ -603,3 +603,70 @@ class NERResult(BaseModel):
     sectors: list[str] = Field(default_factory=list)
     detailed_entities: list[EntityItem] = Field(default_factory=list)
     model_used: str = "en_core_web_trf"
+
+
+class SummaryResult(BaseModel):
+    """Result of document financial summarization."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "summary": "Apple posted Q4 revenue of $94.9B, up 6% YoY driven by iPhone sales.",
+                "model_used": "gpt-4o-mini",
+                "tokens_used": 118,
+            }
+        },
+    )
+
+    summary: str
+    model_used: str
+    tokens_used: int | None = None
+
+
+class EmbeddingResult(BaseModel):
+    """Vector embedding result for financial document or text snippet."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "embedding": [0.012, -0.045, 0.128],
+                "dimensions": 1536,
+                "model_used": "text-embedding-3-small",
+                "tokens_used": 42,
+            }
+        },
+    )
+
+    embedding: list[float]
+    dimensions: int = 1536
+    model_used: str
+    tokens_used: int | None = None
+
+
+class DocumentEnrichmentResult(BaseModel):
+    """Combined document enrichment result containing both financial summary and embedding."""
+
+    model_config = ConfigDict(
+        strict=True,
+        from_attributes=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
+                "summary": "Apple posted record revenue...",
+                "embedding": [0.012, -0.045, 0.128],
+                "model_summary": "gpt-4o-mini",
+                "model_embedding": "text-embedding-3-small",
+            }
+        },
+    )
+
+    summary: str
+    embedding: list[float]
+    model_summary: str
+    model_embedding: str
