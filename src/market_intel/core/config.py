@@ -181,6 +181,39 @@ class Settings(BaseSettings):
         alias="JWT_EXPIRATION_SECONDS",
     )
 
+    # Celery Async Workers & DLQ
+    celery_broker_url: str = Field(
+        default="redis://localhost:6379/0",
+        alias="CELERY_BROKER_URL",
+    )
+    celery_result_backend: str | None = Field(
+        default=None,
+        alias="CELERY_RESULT_BACKEND",
+    )
+    celery_default_queue: str = Field(
+        default="celery",
+        alias="CELERY_DEFAULT_QUEUE",
+    )
+    celery_dlq_name: str = Field(
+        default="market_intel.dlq",
+        alias="CELERY_DLQ_NAME",
+    )
+    celery_max_retries: int = Field(
+        default=3,
+        alias="CELERY_MAX_RETRIES",
+    )
+    celery_retry_base_delay: int = Field(
+        default=60,
+        alias="CELERY_RETRY_BASE_DELAY",
+    )
+
+    @property
+    def resolved_celery_result_backend(self) -> str:
+        """Return resolved Celery result backend URL (PostgreSQL by default)."""
+        if self.celery_result_backend:
+            return self.celery_result_backend
+        return f"db+{self.sync_postgres_url}"
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
